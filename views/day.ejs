@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agenda Harian</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistem Agenda Aula</h1>
+    <nav>
+      <a class="btn" href="/calendar?month=<%= date.slice(0,7) %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Kembali ke Kalender</a>
+      <% if (authenticated) { %>
+        <a class="btn" href="/export/pdf?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh PDF</a>
+        <a class="btn" href="/export/ics?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh ICS</a>
+      <% } %>
+      <% if (authenticated) { %>
+        <a class="btn secondary" href="/logout">Keluar</a>
+      <% } else { %>
+        <% if (typeof reveal !== 'undefined' && reveal) { %>
+          <a class="btn" id="login-link" href="/login">Login</a>
+        <% } %>
+      <% } %>
+    </nav>
+  </header>
+  <main class="container">
+    <h2>Agenda Tanggal <%= dayjs(date).format('DD MMMM YYYY') %></h2>
+
+    <form method="get" action="/day/<%= date %>" class="filter">
+      <input type="hidden" name="date" value="<%= date %>" />
+      <select name="room_id">
+        <option value="">Semua Ruangan</option>
+        <% rooms.forEach(r => { %>
+          <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+        <% }) %>
+      </select>
+      <button type="submit">Terapkan</button>
+    </form>
+
+    <% if (authenticated) { %>
+    <section class="card">
+      <h3>Tambah Peminjaman</h3>
+      <form method="post" action="/book" class="form" enctype="multipart/form-data">
+        <div class="grid-2">
+          <label>Ruangan
+            <select name="room_id" required>
+              <% rooms.forEach(r => { %>
+                <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+              <% }) %>
+            </select>
+          </label>
+          <label>Tanggal Mulai
+            <input type="date" name="start_date" value="<%= date %>" required />
+          </label>
+          <label>Tanggal Selesai
+            <input type="date" name="end_date" value="<%= date %>" required />
+          </label>
+          <label>Jam Mulai
+            <input type="time" name="start_time" required />
+          </label>
+          <label>Jam Selesai
+            <input type="time" name="end_time" required />
+          </label>
+          <label>Instansi Peminjam
+            <input type="text" name="borrower_org" required />
+          </label>
+          <label>Nama Kegiatan
+            <input type="text" name="event_name" required />
+          </label>
+          <label>Nama Panitia Acara
+            <input type="text" name="committee_name" />
+          </label>
+          <label>Kontak
+            <input type="text" name="contact" />
+          </label>
+          <label class="full">Keterangan
+            <textarea name="notes" rows="2"></textarea>
+          </label>
+          <label class="full">Surat Peminjaman (opsional)
+            <input type="file" name="doc" accept="image/*,.pdf" />
+          </label>
+        </div>
+        <button type="submit">Simpan</button>
+      </form>
+    </section>
+    <% } %>
+
+    <section class="card">
+      <h3>Daftar Agenda</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Ruangan</th><th>Waktu</th><th>Instansi</th><th>Kegiatan</th><th>PIC</th><th>Kontak</th><th>Keterangan</th><th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% bookings.forEach(b => { %>
+            <tr>
+              <td><%= b.room_name %></td>
+              <td><%= b.start_time %> - <%= b.end_time %></td>
+              <td><%= b.borrower_org %></td>
+              <td><%= b.event_name %></td>
+              <td><%= b.committee_name || '-' %></td>
+              <td><%= b.contact || '-' %></td>
+              <td>
+                <%= b.notes || '-' %>
+                <% if (b.doc_path) { 
+                     const isImg = /\.(png|jpe?g|gif|webp|svg)$/i.test(b.doc_path);
+                     const isPdf = /\.pdf$/i.test(b.doc_path);
+                  %>
+                  <div style="margin-top:6px">
+                    <a href="<%= b.doc_path %>" class="btn doc-link" data-type="<%= isPdf? 'pdf':'img' %>" data-src="<%= b.doc_path %>">Lihat Surat</a>
+                  </div>
+                <% } %>
+              </td>
+              <td>
+                <% if (authenticated) { %>
+                  <details>
+                    <summary>Edit</summary>
+                    <form method="post" action="/book/<%= b.id %>/update" class="form compact" enctype="multipart/form-data">
+                      <label>Tanggal Mulai
+                        <input type="date" name="start_date" value="<%= b.start_date || b.date %>" required />
+                      </label>
+                      <label>Tanggal Selesai
+                        <input type="date" name="end_date" value="<%= b.end_date || b.date %>" required />
+                      </label>
+                      <label>Ruangan
+                        <select name="room_id" required>
+                          <% rooms.forEach(r => { %>
+                            <option value="<%= r.id %>" <%= String(b.room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+                          <% }) %>
+                        </select>
+                      </label>
+                      <label>Jam Mulai
+                        <input type="time" name="start_time" value="<%= b.start_time %>" required />
+                      </label>
+                      <label>Jam Selesai
+                        <input type="time" name="end_time" value="<%= b.end_time %>" required />
+                      </label>
+                      <label>Instansi
+                        <input type="text" name="borrower_org" value="<%= b.borrower_org %>" required />
+                      </label>
+                      <label>Kegiatan
+                        <input type="text" name="event_name" value="<%= b.event_name %>" required />
+                      </label>
+                      <label>PIC
+                        <input type="text" name="committee_name" value="<%= b.committee_name || '' %>" />
+                      </label>
+                      <label>Kontak
+                        <input type="text" name="contact" value="<%= b.contact || '' %>" />
+                      </label>
+                      <label class="full">Keterangan
+                        <textarea name="notes" rows="2"><%= b.notes || '' %></textarea>
+                      </label>
+                      <label class="full">Ganti Surat Peminjaman (opsional)
+                        <input type="file" name="doc" accept="image/*,.pdf" />
+                      </label>
+                      <button type="submit">Update</button>
+                    </form>
+                  </details>
+                  <form method="post" action="/book/<%= b.id %>/delete" onsubmit="return confirm('Hapus agenda ini?')">
+                    <button type="submit" class="danger">Hapus</button>
+                  </form>
+                <% } else { %>
+                  -
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+          <% if (bookings.length === 0) { %>
+            <tr><td colspan="8" style="text-align:center">Tidak ada agenda</td></tr>
+          <% } %>
+        </tbody>
+      </table>
+    </section>
+  </main>
+  <!-- Lightbox untuk dokumen surat (gambar/PDF) -->
+  <style>
+    .docbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
+    .docbox.open{display:flex}
+    .docbox .inner{max-width:92vw;max-height:88vh;display:flex;flex-direction:column;gap:8px;align-items:center}
+    .docbox img{max-width:92vw;max-height:82vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    .docbox iframe,.docbox embed{width:92vw;height:82vh;background:#fff;border-radius:6px;border:0}
+    .docbox .actions{display:flex;gap:8px}
+    .docbox .btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+    .docbox .btn:hover{background:rgba(255,255,255,.2)}
+    .docbox .caption{color:#e5e7eb;font-size:13px}
+  </style>
+  <div class="docbox" id="docbox" aria-hidden="true">
+    <div class="inner">
+      <div class="actions">
+        <button class="btn" id="dbClose">Tutup ✕</button>
+        <a class="btn" id="dbOpenRaw" href="#" target="_blank" rel="noopener">Buka di Tab</a>
+      </div>
+      <div id="dbContent"></div>
+      <div class="caption" id="dbCaption"></div>
+    </div>
+  </div>
+  <script>
+    (function(){
+      const box = document.getElementById('docbox');
+      const content = document.getElementById('dbContent');
+      const caption = document.getElementById('dbCaption');
+      const openRaw = document.getElementById('dbOpenRaw');
+      const closeBtn = document.getElementById('dbClose');
+      function openViewer(type, src){
+        content.innerHTML = '';
+        openRaw.href = src;
+        caption.textContent = (type==='pdf'?'Dokumen PDF':'Gambar');
+        if(type === 'pdf'){
+          const el = document.createElement('iframe');
+          el.src = src;
+          content.appendChild(el);
+        } else {
+          const el = document.createElement('img');
+          el.src = src;
+          content.appendChild(el);
+        }
+        box.classList.add('open');
+        box.setAttribute('aria-hidden','false');
+      }
+      function closeViewer(){
+        box.classList.remove('open');
+        box.setAttribute('aria-hidden','true');
+        content.innerHTML = '';
+      }
+      document.querySelectorAll('a.doc-link').forEach(a => {
+        a.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const type = a.getAttribute('data-type');
+          const src = a.getAttribute('data-src');
+          openViewer(type, src);
+        });
+      });
+      closeBtn.addEventListener('click', closeViewer);
+      box.addEventListener('click', (e)=>{ if(e.target === box) closeViewer(); });
+      window.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && box.classList.contains('open')) closeViewer(); });
+    })();
+  </script>
+  <script>
+    // Mekanisme reveal login sama dengan kalender
+    (function(){
+      function revealLogin(){
+        const url = new URL(window.location.href);
+        url.searchParams.set('reveal','1');
+        window.location.href = url.toString();
+      }
+      window.addEventListener('keydown', function(e){
+        const key = (e.key || '').toLowerCase();
+        if ((e.ctrlKey && e.shiftKey && key === 'l') || (e.ctrlKey && e.altKey && key === 'l')) {
+          e.preventDefault();
+          revealLogin();
+        }
+      });
+      let buffer = '';
+      const target = 'login';
+      window.addEventListener('keypress', function(e){
+        buffer = (buffer + (e.key || '').toLowerCase()).slice(-target.length);
+        if (buffer === target) revealLogin();
+      });
+      const title = document.querySelector('h1');
+      let clicks = 0, timer = null;
+      if (title) {
+        title.addEventListener('click', function(){
+          clicks++;
+          clearTimeout(timer);
+          timer = setTimeout(function(){ clicks = 0; }, 800);
+          if (clicks >= 5) revealLogin();
+        });
+      }
+      // Ensure login link when reveal=1
+      (function ensureLoginLink(){
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('reveal') === '1') {
+          const nav = document.querySelector('header.topbar nav');
+          const hasLogout = nav && nav.querySelector('a[href="/logout"]');
+          const hasLogin = nav && nav.querySelector('a[href="/login"]');
+          if (nav && !hasLogout && !hasLogin) {
+            const a = document.createElement('a');
+            a.href = '/login';
+            a.textContent = 'Login';
+            a.className = 'btn';
+            nav.appendChild(a);
+          }
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>

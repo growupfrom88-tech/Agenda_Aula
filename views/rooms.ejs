@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Informasi Ruangan</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
+    .room-body { padding:12px; }
+    .gallery { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; }
+    .gallery img { width:100%; height:90px; object-fit:cover; border-radius:6px; background:#f3f4f6; }
+    .meta { color:#374151; font-size:14px; }
+    .meta strong { display:inline-block; min-width:100px; }
+    /* Lightbox */
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
+    .lightbox.open{display:flex}
+    .lightbox img{max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+    .lb-controls{position:fixed;inset:0;display:flex;align-items:center;justify-content:space-between;padding:16px;color:#fff}
+    .lb-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(4px)}
+    .lb-btn:hover{background:rgba(255,255,255,.2)}
+    .lb-close{position:fixed;top:16px;right:16px}
+    .lb-caption{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:#e5e7eb;font-size:14px}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistem Agenda Aula</h1>
+    <nav>
+      <a class="btn" href="/calendar">Kalender</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h2>Informasi Ruangan</h2>
+    <div class="rooms">
+      <% rooms.forEach(r => { %>
+        <div class="room-card">
+          <div class="gallery">
+            <% r.images.forEach((img, idx) => { %>
+              <img src="<%= img %>" alt="Foto <%= r.name %>" data-room-id="<%= r.id %>" data-index="<%= idx %>" data-room-name="<%= r.name %>">
+            <% }) %>
+          </div>
+          <div class="room-body">
+            <h3><%= r.name %></h3>
+            <p class="meta"><strong>Kapasitas:</strong> <%= r.capacity || '-' %> peserta</p>
+            <p class="meta"><strong>Fasilitas:</strong> <%= r.facilities || '-' %></p>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+  <!-- Lightbox overlay -->
+  <div class="lightbox" id="lightbox" aria-hidden="true">
+    <button class="lb-btn lb-close" id="lbClose" aria-label="Tutup">Tutup ✕</button>
+    <div class="lb-controls">
+      <button class="lb-btn" id="lbPrev" aria-label="Sebelumnya">‹ Prev</button>
+      <button class="lb-btn" id="lbNext" aria-label="Berikutnya">Next ›</button>
+    </div>
+    <img id="lbImage" src="" alt="Preview gambar ruangan" />
+    <div class="lb-caption" id="lbCaption"></div>
+  </div>
+
+  <script>
+    (function(){
+      const lb = document.getElementById('lightbox');
+      const imgEl = document.getElementById('lbImage');
+      const capEl = document.getElementById('lbCaption');
+      const prevBtn = document.getElementById('lbPrev');
+      const nextBtn = document.getElementById('lbNext');
+      const closeBtn = document.getElementById('lbClose');
+
+      // Buat peta gambar per ruangan
+      const groups = {};
+      document.querySelectorAll('.gallery img[data-room-id]').forEach(el => {
+        const rid = el.getAttribute('data-room-id');
+        const name = el.getAttribute('data-room-name') || '';
+        if (!groups[rid]) groups[rid] = { name, items: [] };
+        groups[rid].items.push(el.getAttribute('src'));
+      });
+
+      let state = { roomId: null, index: 0 };
+
+      function open(rid, idx){
+        const g = groups[rid];
+        if (!g || !g.items.length) return;
+        state.roomId = rid;
+        state.index = Math.max(0, Math.min(idx, g.items.length - 1));
+        imgEl.src = g.items[state.index];
+        capEl.textContent = g.name + ' — ' + (state.index + 1) + '/' + g.items.length;
+        lb.classList.add('open');
+        lb.setAttribute('aria-hidden','false');
+      }
+      function close(){
+        lb.classList.remove('open');
+        lb.setAttribute('aria-hidden','true');
+        imgEl.src = '';
+      }
+      function next(){
+        const g = groups[state.roomId]; if(!g) return;
+        state.index = (state.index + 1) % g.items.length; open(state.roomId, state.index);
+      }
+      function prev(){
+        const g = groups[state.roomId]; if(!g) return;
+        state.index = (state.index - 1 + g.items.length) % g.items.length; open(state.roomId, state.index);
+      }
+
+      document.querySelectorAll('.gallery img[data-room-id]').forEach(el => {
+        el.addEventListener('click', () => {
+          const rid = el.getAttribute('data-room-id');
+          const idx = parseInt(el.getAttribute('data-index') || '0', 10);
+          open(rid, idx);
+        });
+      });
+      closeBtn.addEventListener('click', close);
+      prevBtn.addEventListener('click', (e)=>{ e.stopPropagation(); prev(); });
+      nextBtn.addEventListener('click', (e)=>{ e.stopPropagation(); next(); });
+      lb.addEventListener('click', (e)=>{ if(e.target === lb) close(); });
+      window.addEventListener('keydown', (e)=>{
+        if(!lb.classList.contains('open')) return;
+        if(e.key === 'Escape') close();
+        if(e.key === 'ArrowRight') next();
+        if(e.key === 'ArrowLeft') prev();
+      });
+    })();
+  </script>
+</body>
+</html>

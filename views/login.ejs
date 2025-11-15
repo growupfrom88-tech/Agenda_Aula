@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login Admin</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistem Agenda Aula</h1>
+  </header>
+  <main class="container">
+    <h2>Login Admin</h2>
+    <p><a class="btn" href="/calendar">← Kembali ke Halaman Utama</a></p>
+    <% if (error) { %>
+      <div class="alert"><%= error %></div>
+    <% } %>
+    <form method="post" action="/login" class="form">
+      <label>Username
+        <input type="text" name="username" required />
+      </label>
+      <label>Password
+        <input type="password" name="password" required />
+      </label>
+      <button type="submit">Masuk</button>
+    </form>
+  </main>
+</body>
+</html>

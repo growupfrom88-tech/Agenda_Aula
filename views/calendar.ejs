@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kalender Agenda</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>Sistem Agenda Aula</h1>
+    <nav>
+      <a class="btn" href="/calendar?month<%= '=' %><%= prevMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">« Bulan Sebelumnya</a>
+      <a class="btn" href="/calendar?month<%= '=' %><%= nextMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Bulan Berikutnya »</a>
+      <a class="btn" href="/rooms">Informasi Ruangan</a>
+      <% if (authenticated) { %>
+        <a class="btn" href="/admin/rooms">Admin Ruangan</a>
+        <a class="btn" href="/export/pdf?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh PDF</a>
+        <a class="btn" href="/export/ics?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh ICS</a>
+      <% } %>
+      <% if (authenticated) { %>
+        <a class="btn secondary" href="/logout">Keluar</a>
+      <% } else { %>
+        <% if (typeof reveal !== 'undefined' && reveal) { %>
+          <a class="btn" id="login-link" href="/login">Login</a>
+        <% } %>
+      <% } %>
+    </nav>
+  </header>
+  <main class="container">
+    <h2>Kalender <%= dayjs(baseMonth+"-01").format('MMMM YYYY') %></h2>
+
+    <form method="get" action="/calendar" class="filter">
+      <input type="month" name="month" value="<%= baseMonth %>" />
+      <select name="room_id">
+        <option value="">Semua Ruangan</option>
+        <% rooms.forEach(r => { %>
+          <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+        <% }) %>
+      </select>
+      <button type="submit">Terapkan</button>
+    </form>
+
+    <div class="calendar-grid">
+      <% const weekDays = ['Min','Sen','Sel','Rab','Kam','Jum','Sab']; %>
+      <div class="calendar-header">
+        <% weekDays.forEach(d => { %>
+          <div class="cell head"><%= d %></div>
+        <% }) %>
+      </div>
+      <div class="calendar-body">
+        <% days.forEach((d,i)=>{ %>
+          <% const inMonth = d.isAfter(firstDay.subtract(1,'day')) && d.isBefore(lastDay.add(1,'day')); %>
+          <div class="cell <%= inMonth? 'in-month':'out-month' %>">
+            <div class="date">
+              <a class="btn ghost sm" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
+            </div>
+            <% const c = counts[d.format('YYYY-MM-DD')] || 0; %>
+            <% if (c>0) { %>
+              <div class="badge"><%= c %> agenda</div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  </main>
+  <script>
+    // Tekan Ctrl+Shift+L atau Ctrl+Alt+L untuk menampilkan tombol Login (reload dengan ?reveal=1)
+    (function(){
+      // Helper to set reveal=1 and reload
+      function revealLogin(){
+        const url = new URL(window.location.href);
+        url.searchParams.set('reveal','1');
+        window.location.href = url.toString();
+      }
+
+      window.addEventListener('keydown', function(e){
+        const key = (e.key || '').toLowerCase();
+        if ((e.ctrlKey && e.shiftKey && key === 'l') || (e.ctrlKey && e.altKey && key === 'l')) {
+          e.preventDefault();
+          revealLogin();
+        }
+      });
+
+      // Fallback: ketik urutan 'login' di mana saja
+      let buffer = '';
+      const target = 'login';
+      window.addEventListener('keypress', function(e){
+        buffer = (buffer + (e.key || '').toLowerCase()).slice(-target.length);
+        if (buffer === target) revealLogin();
+      });
+
+      // Fallback: klik judul 5x cepat
+      const title = document.querySelector('h1');
+      let clicks = 0, timer = null;
+      if (title) {
+        title.addEventListener('click', function(){
+          clicks++;
+          clearTimeout(timer);
+          timer = setTimeout(function(){ clicks = 0; }, 800);
+          if (clicks >= 5) revealLogin();
+        });
+      }
+
+      // Jaga-jaga: jika URL sudah mengandung reveal=1 tapi link Login belum muncul (mis. flag server tidak terset), tambahkan secara client-side
+      (function ensureLoginLink(){
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('reveal') === '1') {
+          const nav = document.querySelector('header.topbar nav');
+          const hasLogout = nav && nav.querySelector('a[href="/logout"]');
+          const hasLogin = nav && nav.querySelector('a[href="/login"]');
+          if (nav && !hasLogout && !hasLogin) {
+            const a = document.createElement('a');
+            a.href = '/login';
+            a.textContent = 'Login';
+            nav.appendChild(a);
+          }
+        }
+      })();
+    })();
+  </script>
+</body>
+</html>

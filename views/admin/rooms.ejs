@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Kelola Ruangan</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
+    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
+    .room-body { padding:12px; }
+    .gallery { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; margin-bottom:8px; }
+    .gallery img { width:100%; height:80px; object-fit:cover; border-radius:6px; background:#f3f4f6; }
+    .form.compact label{display:grid; gap:4px}
+    .actions { display:flex; gap:8px; flex-wrap:wrap; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <h1>Admin - Kelola Ruangan</h1>
+    <nav>
+      <a class="btn" href="/calendar">Kalender</a>
+      <a class="btn" href="/rooms">Informasi Ruangan (Publik)</a>
+      <a class="btn secondary" href="/logout">Keluar</a>
+    </nav>
+  </header>
+  <main class="container">
+    <h2>Daftar Ruangan</h2>
+    <div class="rooms">
+      <% rooms.forEach(r => { %>
+        <div class="room-card">
+          <div class="room-body">
+            <div class="gallery">
+              <% r.images.forEach(img => { %>
+                <div>
+                  <img src="<%= img.url %>" alt="<%= r.name %>" />
+                  <form method="post" action="/admin/rooms/<%= r.id %>/photos/delete" onsubmit="return confirm('Hapus foto ini?')">
+                    <input type="hidden" name="filename" value="<%= img.name %>" />
+                    <button type="submit" class="danger" style="margin-top:4px">Hapus</button>
+                  </form>
+                </div>
+              <% }) %>
+            </div>
+
+            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/update">
+              <label>Nama
+                <input type="text" name="name" value="<%= r.name %>" required />
+              </label>
+              <label>Kapasitas
+                <input type="number" name="capacity" value="<%= r.capacity || '' %>" min="0" />
+              </label>
+              <label>Fasilitas
+                <textarea name="facilities" rows="2"><%= r.facilities || '' %></textarea>
+              </label>
+              <div class="actions">
+                <button type="submit">Simpan</button>
+              </div>
+            </form>
+
+            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/upload" enctype="multipart/form-data" style="margin-top:8px">
+              <label>Tambah Foto (bisa pilih beberapa)
+                <input type="file" name="photos" multiple accept="image/*" />
+              </label>
+              <button type="submit">Unggah</button>
+            </form>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+</body>
+</html>
