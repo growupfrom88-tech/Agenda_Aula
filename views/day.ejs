@@ -37,6 +37,14 @@
       <button type="submit">Terapkan</button>
     </form>
 
+    <div class="day-nav">
+      <div class="day-nav-spacer"></div>
+      <div class="day-nav-buttons">
+        <a class="btn" href="/day/<%= prevDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">« Kemarin</a>
+        <a class="btn" href="/day/<%= nextDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">Besok »</a>
+      </div>
+    </div>
+
     <% if (authenticated) { %>
     <section class="card">
       <h3>Tambah Peminjaman</h3>

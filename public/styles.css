@@ -28,6 +28,9 @@ a.btn.ghost{background:transparent;border-color:#0073ff;color:#111827 !important
 a.btn.ghost:hover{background:#f3f4f6}
 a.btn.sm{padding:6px 10px;font-size:13px}
 
+.day-nav{display:flex;justify-content:flex-end;align-items:center;margin:8px 0}
+.day-nav-buttons{display:flex;gap:8px}
+
 /* Highlight today's date in calendar */
 .cell .date a.btn.today{
   background:#2563eb;

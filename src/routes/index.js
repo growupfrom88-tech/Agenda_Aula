@@ -155,6 +155,10 @@ router.get('/day/:date', async (req, res) => {
       room_name: b.rooms?.name || '',
     }));
 
+    const baseDay = dayjs(date);
+    const prevDate = baseDay.subtract(1, 'day').format('YYYY-MM-DD');
+    const nextDate = baseDay.add(1, 'day').format('YYYY-MM-DD');
+
     res.render('day', {
       date,
       rooms,
@@ -162,6 +166,8 @@ router.get('/day/:date', async (req, res) => {
       bookings,
       dayjs,
       reveal,
+      prevDate,
+      nextDate,
     });
   } catch (e) {
     console.error('GET /day error:', e);
