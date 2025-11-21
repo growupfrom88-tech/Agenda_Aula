@@ -1,169 +1,117 @@
-const fs = require('fs');
-const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
+const { supabase } = require('./supabaseClient');
 
-const dataDir = path.join(__dirname, '..', 'data');
-const dbPath = path.join(dataDir, 'app.sqlite');
-
-function openDb() {
-  return new sqlite3.Database(dbPath);
-}
-
+// Inisialisasi dan seeding berbasis Supabase (BUKAN SQLite lagi)
 async function ensureDb() {
-  if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-  const db = openDb();
+  // Seed rooms jika kosong
+  const { data: existingRooms, error: roomsErr } = await supabase
+    .from('rooms')
+    .select('id')
+    .limit(1);
 
-  await run(db, `PRAGMA foreign_keys = ON;`);
+  if (!roomsErr && (!existingRooms || existingRooms.length === 0)) {
+    const defaults = [
+      { name: 'PASAMOAN', capacity: 80, facilities: 'Kursi, Meja, Sound System, Proyektor, AC' },
+      { name: 'PANGLAWUNGAN', capacity: 120, facilities: 'Kursi, Meja, Panggung, Sound System, Proyektor, AC' },
+      { name: 'ADILUHUNG', capacity: 60, facilities: 'Kursi, Meja, TV/Display, AC' },
+      { name: 'PANINEUNGAN', capacity: 40, facilities: 'Kursi, Meja, Whiteboard, AC' },
+      { name: 'PAMAGEUHAN', capacity: 200, facilities: 'Kursi, Meja, Panggung, Lighting, Sound System, Proyektor, AC' },
+    ];
 
-  await run(
-    db,
-    `CREATE TABLE IF NOT EXISTS rooms (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL UNIQUE,
-      capacity INTEGER,
-      facilities TEXT
-    );`
-  );
-
-  await run(
-    db,
-    `CREATE TABLE IF NOT EXISTS admins (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT NOT NULL UNIQUE,
-      password_hash TEXT NOT NULL,
-      created_at TEXT DEFAULT (datetime('now'))
-    );`
-  );
-
-  await run(
-    db,
-    `CREATE TABLE IF NOT EXISTS bookings (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      room_id INTEGER NOT NULL,
-      borrower_org TEXT NOT NULL,
-      event_name TEXT NOT NULL,
-      date TEXT NOT NULL, -- legacy start_date
-      start_time TEXT NOT NULL, -- HH:mm
-      end_time TEXT NOT NULL, -- HH:mm
-      committee_name TEXT,
-      contact TEXT,
-      notes TEXT,
-      doc_path TEXT,
-      created_at TEXT DEFAULT (datetime('now')),
-      updated_at TEXT DEFAULT (datetime('now')),
-      FOREIGN KEY (room_id) REFERENCES rooms(id) ON DELETE CASCADE
-    );`
-  );
-
-  await run(db, `CREATE INDEX IF NOT EXISTS idx_bookings_room_date ON bookings(room_id, date);`);
-
-  // Migrate to multi-day: add start_date and end_date if missing, and backfill from legacy 'date'
-  const cols = await all(db, `PRAGMA table_info(bookings);`);
-  const hasStartDate = cols.some(c => c.name === 'start_date');
-  const hasEndDate = cols.some(c => c.name === 'end_date');
-  const hasDocPath = cols.some(c => c.name === 'doc_path');
-  if (!hasStartDate) {
-    try { await run(db, `ALTER TABLE bookings ADD COLUMN start_date TEXT;`); } catch (e) {}
-  }
-  if (!hasEndDate) {
-    try { await run(db, `ALTER TABLE bookings ADD COLUMN end_date TEXT;`); } catch (e) {}
-  }
-  if (!hasDocPath) {
-    try { await run(db, `ALTER TABLE bookings ADD COLUMN doc_path TEXT;`); } catch (e) {}
-  }
-  // Backfill null start_date/end_date from legacy date
-  try {
-    await run(db, `UPDATE bookings SET start_date = COALESCE(start_date, date), end_date = COALESCE(end_date, date) WHERE start_date IS NULL OR end_date IS NULL;`);
-  } catch (e) {}
-  // Helpful index for range queries
-  await run(db, `CREATE INDEX IF NOT EXISTS idx_bookings_room_range ON bookings(room_id, start_date, end_date);`);
-
-  // Seed rooms
-  const rooms = ['PASAMOAN', 'PANGLAWUNGAN', 'ADILUHUNG', 'PANINEUNGAN', 'PAMAGEUHAN'];
-  for (const name of rooms) {
-    await run(db, `INSERT OR IGNORE INTO rooms(name) VALUES (?)`, [name]);
+    const { error: insertRoomsErr } = await supabase.from('rooms').insert(defaults);
+    if (insertRoomsErr) {
+      console.error('Gagal seeding rooms ke Supabase:', insertRoomsErr);
+    }
   }
 
-  // Ensure columns exist (for migrations on existing DB)
-  const roomCols = await all(db, `PRAGMA table_info(rooms);`);
-  const hasCapacity = roomCols.some(c => c.name === 'capacity');
-  const hasFacilities = roomCols.some(c => c.name === 'facilities');
-  if (!hasCapacity) { try { await run(db, `ALTER TABLE rooms ADD COLUMN capacity INTEGER;`);} catch(e){} }
-  if (!hasFacilities) { try { await run(db, `ALTER TABLE rooms ADD COLUMN facilities TEXT;`);} catch(e){} }
-
-  // Seed default capacity/facilities if empty
-  const defaults = {
+  // Pastikan setiap room punya capacity/facilities terisi (jika sebelumnya kosong)
+  const defaultsMap = {
     PASAMOAN: { capacity: 80, facilities: 'Kursi, Meja, Sound System, Proyektor, AC' },
     PANGLAWUNGAN: { capacity: 120, facilities: 'Kursi, Meja, Panggung, Sound System, Proyektor, AC' },
     ADILUHUNG: { capacity: 60, facilities: 'Kursi, Meja, TV/Display, AC' },
     PANINEUNGAN: { capacity: 40, facilities: 'Kursi, Meja, Whiteboard, AC' },
-    PAMAGEUHAN: { capacity: 200, facilities: 'Kursi, Meja, Panggung, Lighting, Sound System, Proyektor, AC' }
+    PAMAGEUHAN: { capacity: 200, facilities: 'Kursi, Meja, Panggung, Lighting, Sound System, Proyektor, AC' },
   };
-  for (const name of rooms) {
-    const d = defaults[name];
-    await run(db, `UPDATE rooms SET capacity = COALESCE(capacity, ?), facilities = COALESCE(facilities, ?)
-                   WHERE name = ?`, [d.capacity, d.facilities, name]);
+
+  const { data: roomsAll, error: roomsAllErr } = await supabase
+    .from('rooms')
+    .select('id,name,capacity,facilities');
+  if (!roomsAllErr && roomsAll) {
+    for (const r of roomsAll) {
+      const d = defaultsMap[r.name];
+      if (!d) continue;
+      if (r.capacity == null || r.facilities == null) {
+        const { error: updErr } = await supabase
+          .from('rooms')
+          .update({
+            capacity: r.capacity == null ? d.capacity : r.capacity,
+            facilities: r.facilities == null ? d.facilities : r.facilities,
+          })
+          .eq('id', r.id);
+        if (updErr) console.error('Gagal update default room info:', updErr);
+      }
+    }
   }
 
-  // Seed default admin if none
-  const admin = await get(db, `SELECT COUNT(1) AS c FROM admins`);
-  if (admin.c === 0) {
+  // Seed admin jika belum ada
+  const { data: adminRows, error: adminErr } = await supabase
+    .from('admins')
+    .select('id')
+    .limit(1);
+  if (!adminErr && (!adminRows || adminRows.length === 0)) {
     const username = process.env.ADMIN_USER || 'admin';
     const password = process.env.ADMIN_PASS || 'Admin123!';
     const hash = bcrypt.hashSync(password, 10);
-    await run(db, `INSERT INTO admins(username, password_hash) VALUES (?, ?)`, [username, hash]);
-    console.log(`Seeded default admin username=${username}`);
+    const { error: insErr } = await supabase
+      .from('admins')
+      .insert({ username, password_hash: hash });
+    if (insErr) {
+      console.error('Gagal seeding admin default ke Supabase:', insErr);
+    } else {
+      console.log(`Seeded default admin username=${username} (Supabase)`);
+    }
   }
-
-  db.close();
 }
 
-function run(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function (err) {
-      if (err) return reject(err);
-      resolve(this);
-    });
-  });
-}
+// Cek bentrok booking menggunakan Supabase
+async function checkOverlap(_, { id = null, room_id, start_date, end_date, start_time, end_time }) {
+  let query = supabase
+    .from('bookings')
+    .select('id')
+    .eq('room_id', room_id)
+    .lte('start_date', end_date)
+    .gte('end_date', start_date)
+    .lt('start_time', end_time)
+    .gt('end_time', start_time);
 
-function all(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, function (err, rows) {
-      if (err) return reject(err);
-      resolve(rows);
-    });
-  });
-}
-
-function get(db, sql, params = []) {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, function (err, row) {
-      if (err) return reject(err);
-      resolve(row);
-    });
-  });
-}
-
-function withDb(fn) {
-  const db = openDb();
-  return fn(db).finally(() => db.close());
-}
-
-async function checkOverlap(db, { id = null, room_id, start_date, end_date, start_time, end_time }) {
-  // Overlap if date ranges intersect AND time ranges intersect
-  const params = [room_id, end_date, start_date, end_time, start_time];
-  let sql = `SELECT COUNT(1) AS c FROM bookings
-    WHERE room_id = ?
-      AND start_date <= ? AND end_date >= ?
-      AND start_time < ? AND end_time > ?`;
   if (id) {
-    sql += ' AND id != ?';
-    params.push(id);
+    query = query.neq('id', id);
   }
-  const r = await get(db, sql, params);
-  return r.c > 0;
+
+  const { data, error } = await query;
+  if (error) {
+    console.error('checkOverlap Supabase error:', error);
+    throw error;
+  }
+  return data && data.length > 0;
 }
 
-module.exports = { ensureDb, withDb, openDb, run, all, get, checkOverlap };
+// Stub fungsi-fungsi lama berbasis SQLite (masih diekspor agar require tidak gagal).
+// Semua pemanggilan terhadap fungsi ini harus dihapus saat refactor route selesai.
+function openDb() {
+  throw new Error('openDb (SQLite) tidak lagi didukung. Route harus direfactor ke Supabase.');
+}
+function run() {
+  throw new Error('run (SQLite) tidak lagi didukung. Route harus direfactor ke Supabase.');
+}
+function all() {
+  throw new Error('all (SQLite) tidak lagi didukung. Route harus direfactor ke Supabase.');
+}
+function get() {
+  throw new Error('get (SQLite) tidak lagi didukung. Route harus direfactor ke Supabase.');
+}
+function withDb() {
+  throw new Error('withDb (SQLite) tidak lagi didukung. Route harus direfactor ke Supabase.');
+}
+
+module.exports = { ensureDb, withDb, openDb, run, all, get, checkOverlap, supabase };

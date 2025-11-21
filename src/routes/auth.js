@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const { openDb, get } = require('../db');
+const { supabase } = require('../db');
 
 const router = express.Router();
 
@@ -16,10 +16,21 @@ router.get('/login', (req, res) => {
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
-  const db = openDb();
   try {
-    const admin = await get(db, `SELECT * FROM admins WHERE username = ?`, [username]);
+    const { data, error } = await supabase
+      .from('admins')
+      .select('*')
+      .eq('username', username)
+      .limit(1);
+
+    if (error) {
+      console.error(error);
+      return res.render('login', { error: 'Terjadi kesalahan' });
+    }
+
+    const admin = data && data[0];
     if (!admin) return res.render('login', { error: 'Username atau password salah' });
+
     const ok = bcrypt.compareSync(password, admin.password_hash);
     if (!ok) return res.render('login', { error: 'Username atau password salah' });
     req.session.user = { id: admin.id, username: admin.username };
@@ -27,8 +38,6 @@ router.post('/login', async (req, res) => {
   } catch (e) {
     console.error(e);
     res.render('login', { error: 'Terjadi kesalahan' });
-  } finally {
-    db.close();
   }
 });
 

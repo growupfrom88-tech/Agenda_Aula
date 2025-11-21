@@ -2,7 +2,6 @@ require('dotenv').config();
 const path = require('path');
 const express = require('express');
 const session = require('express-session');
-const SQLiteStore = require('connect-sqlite3')(session);
 const morgan = require('morgan');
 const { router: authRouter } = require('./src/routes/auth');
 const { router: appRouter } = require('./src/routes/index');
@@ -26,7 +25,6 @@ app.use(morgan('dev'));
 
 app.use(
   session({
-    store: new SQLiteStore({ db: 'sessions.sqlite', dir: path.join(__dirname, 'data') }),
     secret: process.env.SESSION_SECRET || 'change_this_secret',
     resave: false,
     saveUninitialized: false,
@@ -52,6 +50,12 @@ app.use((err, req, res, next) => {
   res.status(500).send(err && err.message ? err.message : 'Internal Server Error');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+if (process.env.VERCEL) {
+  // Running on Vercel: export app for serverless function handler
+  module.exports = app;
+} else {
+  // Local / traditional server mode
+  app.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}

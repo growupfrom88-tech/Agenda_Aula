@@ -13,8 +13,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-js": "^2.83.0",
     "bcryptjs": "^3.0.3",
-    "connect-sqlite3": "^0.9.16",
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
@@ -24,8 +24,7 @@
     "ics": "^3.8.1",
     "morgan": "^1.10.1",
     "multer": "^2.0.2",
-    "pdfkit": "^0.17.2",
-    "sqlite3": "^5.1.7"
+    "pdfkit": "^0.17.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"

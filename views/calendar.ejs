@@ -8,7 +8,7 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Sistem Agenda Aula</h1>
+    <h1>Sistem Informasi Agenda Aula<br />Pusbangkom BPW</h1>
     <nav>
       <a class="btn" href="/calendar?month<%= '=' %><%= prevMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">« Bulan Sebelumnya</a>
       <a class="btn" href="/calendar?month<%= '=' %><%= nextMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Bulan Berikutnya »</a>
@@ -16,7 +16,6 @@
       <% if (authenticated) { %>
         <a class="btn" href="/admin/rooms">Admin Ruangan</a>
         <a class="btn" href="/export/pdf?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh PDF</a>
-        <a class="btn" href="/export/ics?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh ICS</a>
       <% } %>
       <% if (authenticated) { %>
         <a class="btn secondary" href="/logout">Keluar</a>
@@ -49,11 +48,14 @@
         <% }) %>
       </div>
       <div class="calendar-body">
-        <% days.forEach((d,i)=>{ %>
-          <% const inMonth = d.isAfter(firstDay.subtract(1,'day')) && d.isBefore(lastDay.add(1,'day')); %>
-          <div class="cell <%= inMonth? 'in-month':'out-month' %>">
+        <% for (let i = 0; i < firstWeekday; i++) { %>
+          <div class="cell out-month"></div>
+        <% } %>
+        <% days.forEach((d)=>{ %>
+          <% const isToday = d.isSame(dayjs(), 'day'); %>
+          <div class="cell in-month">
             <div class="date">
-              <a class="btn ghost sm" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
+              <a class="btn ghost sm <%= isToday ? 'today' : '' %>" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
             </div>
             <% const c = counts[d.format('YYYY-MM-DD')] || 0; %>
             <% if (c>0) { %>
@@ -61,6 +63,15 @@
             <% } %>
           </div>
         <% }) %>
+        <% if (typeof nextDays !== 'undefined' && nextDays && nextDays.length) { %>
+          <% nextDays.forEach((d)=>{ %>
+            <div class="cell out-month">
+              <div class="date">
+                <a class="btn ghost sm" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
+              </div>
+            </div>
+          <% }) %>
+        <% } %>
       </div>
     </div>
   </main>

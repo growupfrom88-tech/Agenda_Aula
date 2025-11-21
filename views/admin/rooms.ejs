@@ -26,6 +26,24 @@
   </header>
   <main class="container">
     <h2>Daftar Ruangan</h2>
+
+    <!-- Form tambah ruangan baru -->
+    <section style="margin-bottom:24px">
+      <h3>Tambah Ruangan Baru</h3>
+      <form class="form compact" method="post" action="/admin/rooms/create">
+        <label>Nama
+          <input type="text" name="name" required />
+        </label>
+        <label>Kapasitas
+          <input type="number" name="capacity" min="0" />
+        </label>
+        <label>Fasilitas
+          <textarea name="facilities" rows="2"></textarea>
+        </label>
+        <button type="submit">Tambah Ruangan</button>
+      </form>
+    </section>
+
     <div class="rooms">
       <% rooms.forEach(r => { %>
         <div class="room-card">
@@ -55,6 +73,10 @@
               <div class="actions">
                 <button type="submit">Simpan</button>
               </div>
+            </form>
+
+            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/delete" onsubmit="return confirm('Hapus ruangan ini beserta semua fotonya?')" style="margin-top:8px">
+              <button type="submit" class="danger">Hapus Ruangan</button>
             </form>
 
             <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/upload" enctype="multipart/form-data" style="margin-top:8px">

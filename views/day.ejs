@@ -8,12 +8,11 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Sistem Agenda Aula</h1>
+    <h1>Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
     <nav>
       <a class="btn" href="/calendar?month=<%= date.slice(0,7) %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Kembali ke Kalender</a>
       <% if (authenticated) { %>
         <a class="btn" href="/export/pdf?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh PDF</a>
-        <a class="btn" href="/export/ics?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh ICS</a>
       <% } %>
       <% if (authenticated) { %>
         <a class="btn secondary" href="/logout">Keluar</a>
@@ -91,14 +90,14 @@
       <table>
         <thead>
           <tr>
-            <th>Ruangan</th><th>Waktu</th><th>Instansi</th><th>Kegiatan</th><th>PIC</th><th>Kontak</th><th>Keterangan</th><th>Aksi</th>
+            <th>Ruangan</th><th>Waktu</th><th>Instansi</th><th>Kegiatan</th><th>PIC</th><th>Kontak</th><th>Ket/Surat Peminjaman</th><th>Aksi</th>
           </tr>
         </thead>
         <tbody>
           <% bookings.forEach(b => { %>
             <tr>
               <td><%= b.room_name %></td>
-              <td><%= b.start_time %> - <%= b.end_time %></td>
+              <td><%= dayjs('1970-01-01T'+b.start_time).format('HH:mm') %> - <%= dayjs('1970-01-01T'+b.end_time).format('HH:mm') %></td>
               <td><%= b.borrower_org %></td>
               <td><%= b.event_name %></td>
               <td><%= b.committee_name || '-' %></td>

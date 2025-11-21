@@ -17,8 +17,8 @@
     .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
     .lightbox.open{display:flex}
     .lightbox img{max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-    .lb-controls{position:fixed;inset:0;display:flex;align-items:center;justify-content:space-between;padding:16px;color:#fff}
-    .lb-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(4px)}
+    .lb-controls{position:fixed;inset:0;display:flex;align-items:center;justify-content:space-between;padding:16px;color:#fff;pointer-events:none}
+    .lb-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(4px);pointer-events:auto}
     .lb-btn:hover{background:rgba(255,255,255,.2)}
     .lb-close{position:fixed;top:16px;right:16px}
     .lb-caption{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:#e5e7eb;font-size:14px}
@@ -26,7 +26,7 @@
 </head>
 <body>
   <header class="topbar">
-    <h1>Sistem Agenda Aula</h1>
+    <h1>Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
     <nav>
       <a class="btn" href="/calendar">Kalender</a>
     </nav>
