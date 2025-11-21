@@ -15,8 +15,12 @@ router.get('/login', (req, res) => {
 });
 
 router.post('/login', async (req, res) => {
-  const { username, password } = req.body;
   try {
+    const body = req.body || {};
+    const { username, password } = body;
+    if (!username || !password) {
+      return res.render('login', { error: 'Permintaan login tidak valid' });
+    }
     const { data, error } = await supabase
       .from('admins')
       .select('*')
