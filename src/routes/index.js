@@ -117,6 +117,12 @@ router.get('/calendar', async (req, res) => {
   }
 });
 
+// Fallback for POST /day/:date (e.g. after form submits with 302 semantics on some clients)
+router.post('/day/:date', (req, res) => {
+  const date = req.params.date;
+  res.redirect(303, `/day/${date}`);
+});
+
 // Fallback: if any POST is sent to /calendar (e.g. from some clients),
 // redirect to the main GET /calendar so it does not error.
 router.post('/calendar', (req, res) => {
@@ -204,7 +210,7 @@ router.post('/book', requireAuth, uploadDoc.single('doc'), async (req, res) => {
     });
     if (insertErr) throw insertErr;
     // Setelah simpan, kembali ke tampilan harian dengan filter default (semua ruangan)
-    res.redirect(`/day/${start_date}`);
+    res.redirect(303, `/day/${start_date}`);
   } catch (e) {
     console.error('POST /book error:', e);
     res.status(500).send(e && e.message ? e.message : 'Error');
@@ -225,7 +231,7 @@ router.post('/book/:id/delete', requireAuth, async (req, res) => {
     const { error: delErr } = await supabase.from('bookings').delete().eq('id', id);
     if (delErr) throw delErr;
     // Setelah hapus, kembali ke tampilan harian dengan filter default (semua ruangan)
-    res.redirect(`/day/${b.start_date}`);
+    res.redirect(303, `/day/${b.start_date}`);
   } catch (e) {
     console.error(e);
     res.status(500).send('Error');
@@ -276,7 +282,7 @@ router.post('/book/:id/update', requireAuth, uploadDoc.single('doc'), async (req
       .eq('id', id);
     if (updErr) throw updErr;
     // Setelah update, kembali ke tampilan harian dengan filter default (semua ruangan)
-    res.redirect(`/day/${start_date}`);
+    res.redirect(303, `/day/${start_date}`);
   } catch (e) {
     console.error(e);
     res.status(500).send('Error');
