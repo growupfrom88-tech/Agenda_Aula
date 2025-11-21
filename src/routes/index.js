@@ -117,6 +117,12 @@ router.get('/calendar', async (req, res) => {
   }
 });
 
+// Fallback: if any POST is sent to /calendar (e.g. from some clients),
+// redirect to the main GET /calendar so it does not error.
+router.post('/calendar', (req, res) => {
+  res.redirect('/calendar');
+});
+
 router.get('/day/:date', async (req, res) => {
   try {
     const date = req.params.date; // YYYY-MM-DD
