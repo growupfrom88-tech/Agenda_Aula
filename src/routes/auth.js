@@ -34,7 +34,8 @@ router.post('/login', async (req, res) => {
     const ok = bcrypt.compareSync(password, admin.password_hash);
     if (!ok) return res.render('login', { error: 'Username atau password salah' });
     req.session.user = { id: admin.id, username: admin.username };
-    res.redirect('/calendar');
+    // Use 303 so that the client converts POST to GET when following redirect
+    res.redirect(303, '/calendar');
   } catch (e) {
     console.error(e);
     res.render('login', { error: 'Terjadi kesalahan' });
