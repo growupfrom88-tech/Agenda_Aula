@@ -105,7 +105,10 @@
           <% bookings.forEach(b => { %>
             <tr>
               <td><%= b.room_name %></td>
-              <td><%= dayjs('1970-01-01T'+b.start_time).format('HH:mm') %> - <%= dayjs('1970-01-01T'+b.end_time).format('HH:mm') %></td>
+              <td>
+                <div><%= dayjs(b.start_date || b.date).format('DD MMM YYYY') %> - <%= dayjs(b.end_date || b.date).format('DD MMM YYYY') %></div>
+                <div><%= dayjs('1970-01-01T'+b.start_time).format('HH:mm') %> - <%= dayjs('1970-01-01T'+b.end_time).format('HH:mm') %></div>
+              </td>
               <td><%= b.borrower_org %></td>
               <td><%= b.event_name %></td>
               <td><%= b.committee_name || '-' %></td>
