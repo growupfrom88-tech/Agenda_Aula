@@ -4,43 +4,57 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin - Kelola Ruangan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap:16px; }
-    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
-    .room-body { padding:12px; }
-    .gallery { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; margin-bottom:8px; }
-    .gallery img { width:100%; height:80px; object-fit:cover; border-radius:6px; background:#f3f4f6; }
-    .form.compact label{display:grid; gap:4px}
+    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(350px,1fr)); gap:24px; }
+    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:shadow 0.3s; }
+    .room-card:hover { box-shadow:0 10px 25px rgba(0,0,0,0.15); }
+    .room-body { padding:20px; }
+    .gallery { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; margin-bottom:16px; }
+    .gallery img { width:100%; height:100px; object-fit:cover; border-radius:8px; background:#f3f4f6; }
+    .form label{display:block; margin-bottom:12px}
+    .form label input, .form label textarea{width:100%; padding:10px; border:1px solid #d1d5db; border-radius:8px; margin-top:4px}
+    .form label input:focus, .form label textarea:focus{outline:none; border-color:#3b82f6; ring:2px ring-blue-500}
     .actions { display:flex; gap:8px; flex-wrap:wrap; }
   </style>
 </head>
-<body>
-  <header class="topbar">
-    <h1>Admin - Kelola Ruangan</h1>
-    <nav>
-      <a class="btn" href="/calendar">Kalender</a>
-      <a class="btn" href="/rooms">Informasi Ruangan (Publik)</a>
-      <a class="btn secondary" href="/logout">Keluar</a>
-    </nav>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold">Admin - Kelola Ruangan</h1>
+        <nav class="flex flex-wrap gap-2">
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/calendar">Kalender</a>
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/rooms">Informasi Ruangan (Publik)</a>
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/logout">Keluar</a>
+        </nav>
+      </div>
+    </div>
   </header>
-  <main class="container">
-    <h2>Daftar Ruangan</h2>
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Daftar Ruangan</h2>
 
     <!-- Form tambah ruangan baru -->
-    <section style="margin-bottom:24px">
-      <h3>Tambah Ruangan Baru</h3>
-      <form class="form compact" method="post" action="/admin/rooms/create">
-        <label>Nama
-          <input type="text" name="name" required />
+    <section class="bg-white rounded-xl shadow-md p-6 mb-8">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+        Tambah Ruangan Baru
+      </h3>
+      <form class="form space-y-4" method="post" action="/admin/rooms/create">
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700">Nama Ruangan</span>
+          <input type="text" name="name" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
         </label>
-        <label>Kapasitas
-          <input type="number" name="capacity" min="0" />
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700">Kapasitas</span>
+          <input type="number" name="capacity" min="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
         </label>
-        <label>Fasilitas
-          <textarea name="facilities" rows="2"></textarea>
+        <label class="block">
+          <span class="text-sm font-medium text-gray-700">Fasilitas</span>
+          <textarea name="facilities" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
         </label>
-        <button type="submit">Tambah Ruangan</button>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">Tambah Ruangan</button>
       </form>
     </section>
 
@@ -52,38 +66,34 @@
               <% r.images.forEach(img => { %>
                 <div>
                   <img src="<%= img.url %>" alt="<%= r.name %>" />
-                  <form method="post" action="/admin/rooms/<%= r.id %>/photos/delete" onsubmit="return confirm('Hapus foto ini?')">
-                    <input type="hidden" name="filename" value="<%= img.name %>" />
-                    <button type="submit" class="danger" style="margin-top:4px">Hapus</button>
-                  </form>
                 </div>
               <% }) %>
             </div>
 
-            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/update">
-              <label>Nama
-                <input type="text" name="name" value="<%= r.name %>" required />
+            <form class="form space-y-4" method="post" action="/admin/rooms/<%= r.id %>/update">
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Nama Ruangan</span>
+                <input type="text" name="name" value="<%= r.name %>" required class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </label>
-              <label>Kapasitas
-                <input type="number" name="capacity" value="<%= r.capacity || '' %>" min="0" />
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Kapasitas</span>
+                <input type="number" name="capacity" value="<%= r.capacity || '' %>" min="0" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </label>
-              <label>Fasilitas
-                <textarea name="facilities" rows="2"><%= r.facilities || '' %></textarea>
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Fasilitas</span>
+                <textarea name="facilities" rows="2" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"><%= r.facilities || '' %></textarea>
               </label>
               <div class="actions">
-                <button type="submit">Simpan</button>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Simpan</button>
               </div>
             </form>
 
-            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/delete" onsubmit="return confirm('Hapus ruangan ini beserta semua fotonya?')" style="margin-top:8px">
-              <button type="submit" class="danger">Hapus Ruangan</button>
-            </form>
-
-            <form class="form compact" method="post" action="/admin/rooms/<%= r.id %>/upload" enctype="multipart/form-data" style="margin-top:8px">
-              <label>Tambah Foto (bisa pilih beberapa)
-                <input type="file" name="photos" multiple accept="image/*" />
+            <form class="form space-y-4 mt-4" method="post" action="/admin/rooms/<%= r.id %>/upload" enctype="multipart/form-data">
+              <label class="block">
+                <span class="text-sm font-medium text-gray-700">Tambah Foto (bisa pilih beberapa)</span>
+                <input type="file" name="photos" multiple accept="image/*" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </label>
-              <button type="submit">Unggah</button>
+              <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors">Unggah Foto</button>
             </form>
           </div>
         </div>

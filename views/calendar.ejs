@@ -4,74 +4,114 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kalender Agenda</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>Sistem Informasi Agenda Aula<br />Pusbangkom BPW</h1>
-    <nav>
-      <a class="btn" href="/calendar?month<%= '=' %><%= prevMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">« Bulan Sebelumnya</a>
-      <a class="btn" href="/calendar?month<%= '=' %><%= nextMonth %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Bulan Berikutnya »</a>
-      <a class="btn" href="/rooms">Informasi Ruangan</a>
-      <% if (authenticated) { %>
-        <a class="btn" href="/admin/rooms">Admin Ruangan</a>
-        <a class="btn" href="/export/pdf?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh PDF</a>
-      <% } %>
-      <% if (authenticated) { %>
-        <a class="btn secondary" href="/logout">Keluar</a>
-      <% } else { %>
-        <% if (typeof reveal !== 'undefined' && reveal) { %>
-          <a class="btn" id="login-link" href="/login">Login</a>
-        <% } %>
-      <% } %>
-    </nav>
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold">Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
+        <nav class="flex flex-wrap gap-2">
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/rooms">Informasi Ruangan</a>
+          <% if (authenticated) { %>
+            <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/admin/rooms">Admin Ruangan</a>
+            <!--<a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/export/pdf?scope=month&date=<%= baseMonth %>&room_id=<%= room_id %>">Unduh PDF</a>-->
+            <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/reports/monthly">Laporan Bulanan</a>
+          <% } %>
+          <% if (authenticated) { %>
+            <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/logout">Keluar</a>
+          <% } else { %>
+            <% if (typeof reveal !== 'undefined' && reveal) { %>
+              <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" id="login-link" href="/login">Login</a>
+            <% } %>
+          <% } %>
+        </nav>
+      </div>
+    </div>
   </header>
-  <main class="container">
-    <h2>Kalender <%= dayjs(baseMonth+"-01").format('MMMM YYYY') %></h2>
+  <main class="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Kalender <%= dayjs(baseMonth+"-01").format('MMMM YYYY') %></h2>
 
-    <form method="get" action="/calendar" class="filter">
-      <input type="month" name="month" value="<%= baseMonth %>" />
-      <select name="room_id">
-        <option value="">Semua Ruangan</option>
-        <% rooms.forEach(r => { %>
-          <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
-        <% }) %>
-      </select>
-      <button type="submit">Terapkan</button>
+    <form method="get" action="/calendar" class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 items-center">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4H8m0 0h8M8 7a4 4 0 018 0 4 4 0 018 0M8 15v2m0 0v2m0-2h8"></path></svg>
+          <input type="month" name="month" value="<%= baseMonth %>" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1"></path></svg>
+          <select name="room_id" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Semua Ruangan</option>
+            <% rooms.forEach(r => { %>
+              <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707L17.586 8.293a1 1 0 00.293.707V16m-2-2v2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v6a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2a2 2 0 012 2z"></path></svg>
+          Terapkan
+        </button>
+      </div>
     </form>
 
-    <div class="calendar-grid">
-      <% const weekDays = ['Min','Sen','Sel','Rab','Kam','Jum','Sab']; %>
-      <div class="calendar-header">
-        <% weekDays.forEach(d => { %>
-          <div class="cell head"><%= d %></div>
-        <% }) %>
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="bg-gradient-to-r from-blue-50 to-blue-100 px-6 py-4 border-b border-gray-200">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+          <h3 class="text-xl font-bold text-blue-900">Kalender <%= dayjs(baseMonth+"-01").format('MMMM YYYY') %></h3>
+          <div class="flex gap-2">
+            <a class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-gray-200" href="/calendar?month<%= '=' %><%= prevMonth %>&room_id=<%= room_id %>">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            </a>
+            <a class="bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2 border border-gray-200" href="/calendar?month<%= '=' %><%= nextMonth %>&room_id=<%= room_id %>">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </a>
+          </div>
+        </div>
       </div>
-      <div class="calendar-body">
-        <% for (let i = 0; i < firstWeekday; i++) { %>
-          <div class="cell out-month"></div>
-        <% } %>
-        <% days.forEach((d)=>{ %>
-          <% const isToday = d.isSame(dayjs(), 'day'); %>
-          <div class="cell in-month">
-            <div class="date">
-              <a class="btn ghost sm <%= isToday ? 'today' : '' %>" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
-            </div>
-            <% const c = counts[d.format('YYYY-MM-DD')] || 0; %>
-            <% if (c>0) { %>
-              <div class="badge"><%= c %> agenda</div>
+      
+      <div class="p-6">
+        <div class="calendar-grid bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <% const weekDays = ['Min','Sen','Sel','Rab','Kam','Jum','Sab']; %>
+          <div class="calendar-header grid grid-cols-7">
+            <% weekDays.forEach(d => { %>
+              <div class="cell head bg-gray-50 text-gray-700 font-semibold py-3 text-center border-b border-gray-200"><%= d %></div>
+            <% }) %>
+          </div>
+          <div class="calendar-body grid grid-cols-7">
+            <% for (let i = 0; i < firstWeekday; i++) { %>
+              <div class="cell out-month bg-gray-50 text-gray-400 min-h-[80px] p-2"></div>
+            <% } %>
+            <% days.forEach((d)=>{ %>
+              <% const isToday = d.isSame(dayjs(), 'day'); %>
+              <div class="cell in-month bg-white min-h-[80px] p-2 border-r border-b border-gray-200 hover:bg-blue-50 transition-colors">
+                <div class="date">
+                  <a class="inline-block w-8 h-8 rounded-full flex items-center justify-center <%= isToday ? 'bg-blue-600 text-white font-bold shadow-md' : 'bg-gray-100 hover:bg-blue-200 text-gray-700' %> transition-all hover:scale-110" 
+                     href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">
+                    <%= d.format('D') %>
+                  </a>
+                </div>
+                <% const c = counts[d.format('YYYY-MM-DD')] || 0; %>
+                <% if (c>0) { %>
+                  <div class="badge mt-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full text-center"><%= c %> agenda</div>
+                <% } %>
+              </div>
+            <% }) %>
+            <% if (typeof nextDays !== 'undefined' && nextDays && nextDays.length) { %>
+              <% nextDays.forEach((d)=>{ %>
+                <div class="cell out-month bg-gray-50 text-gray-400 min-h-[80px] p-2 border-r border-b border-gray-200">
+                  <div class="date">
+                    <a class="inline-block w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-500" 
+                       href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">
+                      <%= d.format('D') %>
+                    </a>
+                  </div>
+                </div>
+              <% }) %>
             <% } %>
           </div>
-        <% }) %>
-        <% if (typeof nextDays !== 'undefined' && nextDays && nextDays.length) { %>
-          <% nextDays.forEach((d)=>{ %>
-            <div class="cell out-month">
-              <div class="date">
-                <a class="btn ghost sm" href="/day/<%= d.format('YYYY-MM-DD') %>?room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>"><%= d.format('D') %></a>
-              </div>
-            </div>
-          <% }) %>
-        <% } %>
+        </div>
       </div>
     </div>
   </main>

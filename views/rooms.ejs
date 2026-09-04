@@ -4,35 +4,42 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Informasi Ruangan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/styles.css" />
   <style>
-    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
-    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:10px; overflow:hidden; }
-    .room-body { padding:12px; }
+    .rooms { display:grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap:24px; }
+    .room-card { background:#fff; border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.1); transition:shadow 0.3s; }
+    .room-card:hover { box-shadow:0 10px 25px rgba(0,0,0,0.15); }
+    .room-body { padding:20px; }
     .gallery { display:grid; grid-template-columns: repeat(3,1fr); gap:4px; }
-    .gallery img { width:100%; height:90px; object-fit:cover; border-radius:6px; background:#f3f4f6; }
-    .meta { color:#374151; font-size:14px; }
-    .meta strong { display:inline-block; min-width:100px; }
+    .gallery img { width:100%; height:100px; object-fit:cover; border-radius:6px; background:#f3f4f6; cursor:pointer; transition:transform 0.2s; }
+    .gallery img:hover { transform:scale(1.05); }
+    .meta { color:#374151; font-size:14px; margin-bottom:8px; }
+    .meta strong { display:inline-block; min-width:100px; color:#1f2937; }
     /* Lightbox */
-    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
+    .lightbox{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;align-items:center;justify-content:center;z-index:1000}
     .lightbox.open{display:flex}
-    .lightbox img{max-width:90vw;max-height:85vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
-    .lb-controls{position:fixed;inset:0;display:flex;align-items:center;justify-content:space-between;padding:16px;color:#fff;pointer-events:none}
-    .lb-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:10px 14px;cursor:pointer;backdrop-filter:blur(4px);pointer-events:auto}
-    .lb-btn:hover{background:rgba(255,255,255,.2)}
-    .lb-close{position:fixed;top:16px;right:16px}
-    .lb-caption{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);color:#e5e7eb;font-size:14px}
+    .lightbox img{max-width:90vw;max-height:85vh;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+    .lb-controls{position:fixed;inset:0;display:flex;align-items:center;justify-content:space-between;padding:20px;color:#fff;pointer-events:none}
+    .lb-btn{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:12px;padding:12px 16px;cursor:pointer;backdrop-filter:blur(8px);pointer-events:auto;transition:background 0.2s}
+    .lb-btn:hover{background:rgba(255,255,255,.25)}
+    .lb-close{position:fixed;top:20px;right:20px;padding:12px 16px}
+    .lb-caption{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#fff;font-size:14px;background:rgba(0,0,0,0.5);padding:8px 16px;border-radius:20px;backdrop-filter:blur(4px)}
   </style>
 </head>
-<body>
-  <header class="topbar">
-    <h1>Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
-    <nav>
-      <a class="btn" href="/calendar">Kalender</a>
-    </nav>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold">Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
+        <nav class="flex flex-wrap gap-2">
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/calendar">Kalender</a>
+        </nav>
+      </div>
+    </div>
   </header>
-  <main class="container">
-    <h2>Informasi Ruangan</h2>
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Informasi Ruangan</h2>
     <div class="rooms">
       <% rooms.forEach(r => { %>
         <div class="room-card">
@@ -42,9 +49,15 @@
             <% }) %>
           </div>
           <div class="room-body">
-            <h3><%= r.name %></h3>
-            <p class="meta"><strong>Kapasitas:</strong> <%= r.capacity || '-' %> peserta</p>
-            <p class="meta"><strong>Fasilitas:</strong> <%= r.facilities || '-' %></p>
+            <h3 class="text-xl font-bold text-gray-800 mb-3"><%= r.name %></h3>
+            <p class="meta flex items-center">
+              <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              <strong>Kapasitas:</strong> <%= r.capacity || '-' %> peserta
+            </p>
+            <p class="meta flex items-start">
+              <svg class="w-5 h-5 mr-2 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1"></path></svg>
+              <strong>Fasilitas:</strong> <%= r.facilities || '-' %>
+            </p>
           </div>
         </div>
       <% }) %>
@@ -52,10 +65,16 @@
   </main>
   <!-- Lightbox overlay -->
   <div class="lightbox" id="lightbox" aria-hidden="true">
-    <button class="lb-btn lb-close" id="lbClose" aria-label="Tutup">Tutup ✕</button>
+    <button class="lb-btn lb-close" id="lbClose" aria-label="Tutup">
+      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
     <div class="lb-controls">
-      <button class="lb-btn" id="lbPrev" aria-label="Sebelumnya">‹ Prev</button>
-      <button class="lb-btn" id="lbNext" aria-label="Berikutnya">Next ›</button>
+      <button class="lb-btn" id="lbPrev" aria-label="Sebelumnya">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </button>
+      <button class="lb-btn" id="lbNext" aria-label="Berikutnya">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </button>
     </div>
     <img id="lbImage" src="" alt="Preview gambar ruangan" />
     <div class="lb-caption" id="lbCaption"></div>

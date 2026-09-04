@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laporan Bulanan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold">Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
+        <nav class="flex flex-wrap gap-2">
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/calendar">Kembali ke Kalender</a>
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/reports/monthly/pdf?month=<%= month %>">Unduh PDF</a>
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/logout">Keluar</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  <main class="max-w-7xl mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Laporan Bulanan</h2>
+
+    <!-- Month filter and navigation -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+        <form method="get" action="/reports/monthly" class="flex gap-3 items-center">
+          <input type="month" name="month" value="<%= month %>" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Tampilkan</button>
+        </form>
+        <div class="flex gap-2">
+          <a class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="/reports/monthly?month=<%= prevMonth %>">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+            Bulan Sebelumnya
+          </a>
+          <a class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center gap-2" href="/reports/monthly?month=<%= nextMonth %>">
+            Bulan Berikutnya
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-blue-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm">Total Peminjaman</p>
+            <p class="text-3xl font-bold text-gray-800"><%= stats.total %></p>
+          </div>
+          <div class="bg-blue-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-green-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm">Disetujui</p>
+            <p class="text-3xl font-bold text-green-600"><%= stats.approved %></p>
+          </div>
+          <div class="bg-green-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-yellow-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm">Menunggu</p>
+            <p class="text-3xl font-bold text-yellow-600"><%= stats.pending %></p>
+          </div>
+          <div class="bg-yellow-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl shadow-md p-6 border-l-4 border-red-500">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-gray-600 text-sm">Ditolak</p>
+            <p class="text-3xl font-bold text-red-600"><%= stats.rejected %></p>
+          </div>
+          <div class="bg-red-100 p-3 rounded-full">
+            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Room statistics -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Statistik per Ruangan</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Ruangan</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Jumlah Peminjaman</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Total Peserta</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% Object.keys(roomStats).forEach(roomName => { %>
+              <tr class="border-b">
+                <td class="px-4 py-3 text-gray-900"><%= roomName %></td>
+                <td class="px-4 py-3 text-gray-900"><%= roomStats[roomName].count %></td>
+                <td class="px-4 py-3 text-gray-900"><%= roomStats[roomName].totalParticipants %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Booking list -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Peminjaman</h3>
+      <div class="overflow-x-auto -mx-6 px-6">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[100px]">Tanggal</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[100px]">Ruangan</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[200px]">Kegiatan</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[180px]">Instansi</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[100px]">Status</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[80px]">Peserta</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[120px]">PIC</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700 whitespace-nowrap min-w-[120px]">Kontak</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% bookings.forEach(b => { %>
+              <tr class="border-b hover:bg-gray-50">
+                <td class="px-4 py-3 text-gray-900 whitespace-nowrap">
+                  <%= dayjs(b.start_date || b.date).format('DD MMM YYYY') %>
+                  <% if (b.start_date !== b.end_date) { %>
+                    - <%= dayjs(b.end_date).format('DD MMM YYYY') %>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= b.room_name %></td>
+                <td class="px-4 py-3 text-gray-900 break-words"><%= b.event_name %></td>
+                <td class="px-4 py-3 text-gray-900 break-words"><%= b.borrower_org %></td>
+                <td class="px-4 py-3">
+                  <span class="px-2 py-1 rounded-full text-xs font-semibold <%= b.status === 'approved' ? 'bg-green-100 text-green-800' : b.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+                    <%= b.status === 'approved' ? 'Disetujui' : b.status === 'rejected' ? 'Ditolak' : 'Menunggu' %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-gray-900 whitespace-nowrap"><%= b.participant_count || '-' %></td>
+                <td class="px-4 py-3 text-gray-900 break-words"><%= b.committee_name || '-' %></td>
+                <td class="px-4 py-3 text-gray-900 break-words"><%= b.contact || '-' %></td>
+              </tr>
+            <% }) %>
+            <% if (bookings.length === 0) { %>
+              <tr><td colspan="8" class="text-center py-8 text-gray-500">Tidak ada peminjaman pada bulan ini</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

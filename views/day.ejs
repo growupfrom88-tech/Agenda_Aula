@@ -4,187 +4,301 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Agenda Harian</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <header class="topbar">
-    <h1>Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
-    <nav>
-      <a class="btn" href="/calendar?month=<%= date.slice(0,7) %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Kembali ke Kalender</a>
-      <% if (authenticated) { %>
-        <a class="btn" href="/export/pdf?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh PDF</a>
-      <% } %>
-      <% if (authenticated) { %>
-        <a class="btn secondary" href="/logout">Keluar</a>
-      <% } else { %>
-        <% if (typeof reveal !== 'undefined' && reveal) { %>
-          <a class="btn" id="login-link" href="/login">Login</a>
-        <% } %>
-      <% } %>
-    </nav>
+  <header class="bg-gradient-to-r from-blue-900 to-blue-700 text-white shadow-lg">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl md:text-2xl font-bold">Sistem Informasi Agenda Aula Pusbangkom BPW</h1>
+        <nav class="flex flex-wrap gap-2">
+          <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/calendar?month=<%= date.slice(0,7) %>&room_id=<%= room_id %><%= (typeof reveal !== 'undefined' && reveal) ? '&reveal=1' : '' %>">Kembali ke Kalender</a>
+          <% if (authenticated) { %>
+            <!--<a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/export/pdf?scope=day&date=<%= date %>&room_id=<%= room_id %>">Unduh PDF</a>-->
+            <!--<a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/print/reservation?date=<%= date %>&room_id=<%= room_id %>">Cetak Bukti Reservasi</a>-->
+            <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/reports/monthly">Laporan Bulanan</a>
+          <% } %>
+          <% if (authenticated) { %>
+            <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" href="/logout">Keluar</a>
+          <% } else { %>
+            <% if (typeof reveal !== 'undefined' && reveal) { %>
+              <a class="bg-white/20 hover:bg-white/30 text-white px-3 py-2 rounded-lg text-sm transition-colors" id="login-link" href="/login">Login</a>
+            <% } %>
+          <% } %>
+        </nav>
+      </div>
+    </div>
   </header>
-  <main class="container">
-    <h2>Agenda Tanggal <%= dayjs(date).format('DD MMMM YYYY') %></h2>
+  <main class="max-w-7xl mx-auto px-4 py-8 bg-gray-50 min-h-screen">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Agenda Tanggal <%= dayjs(date).format('DD MMMM YYYY') %></h2>
 
-    <form method="get" action="/day/<%= date %>" class="filter">
-      <input type="hidden" name="date" value="<%= date %>" />
-      <select name="room_id">
-        <option value="">Semua Ruangan</option>
-        <% rooms.forEach(r => { %>
-          <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
-        <% }) %>
-      </select>
-      <button type="submit">Terapkan</button>
+    <form method="get" action="/day/<%= date %>" class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <div class="flex flex-col md:flex-row gap-4 items-center">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1"></path></svg>
+          <select name="room_id" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">Semua Ruangan</option>
+            <% rooms.forEach(r => { %>
+              <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+            <% }) %>
+          </select>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">Terapkan</button>
+      </div>
     </form>
 
-    <div class="day-nav">
-      <div class="day-nav-spacer"></div>
-      <div class="day-nav-buttons">
-        <a class="btn" href="/day/<%= prevDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">« Kemarin</a>
-        <a class="btn" href="/day/<%= nextDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">Besok »</a>
+    <div class="flex justify-end gap-2 mb-6">
+      <a class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center justify-center" href="/day/<%= prevDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      </a>
+      <a class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg transition-colors flex items-center justify-center" href="/day/<%= nextDate %>?room_id=<%= room_id %><%= reveal ? '&reveal=1' : '' %>">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+      </a>
+    </div>
+
+    <div class="mb-6">
+      <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors" id="openBookingModal"><%= authenticated ? 'Tambah Peminjaman' : 'Ajukan Peminjaman Ruangan' %></button>
+    </div>
+
+    <!-- Booking Modal -->
+    <div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="bookingModal" aria-hidden="true">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200">
+          <h3 class="text-xl font-bold text-gray-800"><%= authenticated ? 'Tambah Peminjaman (Admin)' : 'Ajukan Peminjaman Ruangan' %></h3>
+          <button class="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none" id="closeBookingModal">&times;</button>
+        </div>
+        <div class="p-6 overflow-y-auto max-h-[60vh]">
+          <form method="post" action="/book" class="grid grid-cols-1 md:grid-cols-2 gap-4" enctype="multipart/form-data" id="bookingForm">
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Tanggal Mulai
+                <input type="date" name="start_date" value="<%= date %>" required id="startDate" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Tanggal Selesai
+                <input type="date" name="end_date" value="<%= date %>" required id="endDate" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Jam Mulai
+                <input type="time" name="start_time" required id="startTime" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Jam Selesai
+                <input type="time" name="end_time" required id="endTime" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Ruangan
+                <select name="room_id" required id="roomSelect" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                  <option value="">Pilih tanggal dan waktu dulu</option>
+                  <% rooms.forEach(r => { %>
+                    <option value="<%= r.id %>" data-capacity="<%= r.capacity || '-' %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %> (Kapasitas: <%= r.capacity || '-' %>)</option>
+                  <% }) %>
+                </select>
+                <small id="roomAvailabilityStatus" class="text-gray-600 text-xs"></small>
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Jumlah Peserta
+                <input type="number" name="participant_count" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Instansi Peminjam
+                <input type="text" name="borrower_org" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Nama Kegiatan
+                <input type="text" name="event_name" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Nama Panitia Acara
+                <input type="text" name="committee_name" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Kontak
+                <input type="text" name="contact" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Keterangan
+                <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"></textarea>
+              </label>
+            </div>
+            <div class="col-span-1 md:col-span-2">
+              <label class="block text-sm font-medium mb-1 text-gray-700">Surat Peminjaman (opsional)
+                <input type="file" name="doc" accept="image/*,.pdf" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+              </label>
+            </div>
+            <div class="col-span-1 md:col-span-2 flex justify-end gap-3 pt-4">
+              <button type="button" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors" id="cancelBooking">Batal</button>
+              <button type="submit" id="submitBtn" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"><%= authenticated ? 'Simpan' : 'Ajukan Peminjaman' %></button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
 
-    <% if (authenticated) { %>
-    <section class="card">
-      <h3>Tambah Peminjaman</h3>
-      <form method="post" action="/book" class="form" enctype="multipart/form-data">
-        <div class="grid-2">
-          <label>Ruangan
-            <select name="room_id" required>
-              <% rooms.forEach(r => { %>
-                <option value="<%= r.id %>" <%= String(room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
-              <% }) %>
-            </select>
-          </label>
-          <label>Tanggal Mulai
-            <input type="date" name="start_date" value="<%= date %>" required />
-          </label>
-          <label>Tanggal Selesai
-            <input type="date" name="end_date" value="<%= date %>" required />
-          </label>
-          <label>Jam Mulai
-            <input type="time" name="start_time" required />
-          </label>
-          <label>Jam Selesai
-            <input type="time" name="end_time" required />
-          </label>
-          <label>Instansi Peminjam
-            <input type="text" name="borrower_org" required />
-          </label>
-          <label>Nama Kegiatan
-            <input type="text" name="event_name" required />
-          </label>
-          <label>Nama Panitia Acara
-            <input type="text" name="committee_name" />
-          </label>
-          <label>Kontak
-            <input type="text" name="contact" />
-          </label>
-          <label class="full">Keterangan
-            <textarea name="notes" rows="2"></textarea>
-          </label>
-          <label class="full">Surat Peminjaman (opsional)
-            <input type="file" name="doc" accept="image/*,.pdf" />
-          </label>
-        </div>
-        <button type="submit">Simpan</button>
-      </form>
-    </section>
-    <% } %>
-
-    <section class="card">
-      <h3>Daftar Agenda</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Ruangan</th><th>Waktu</th><th>Instansi</th><th>Kegiatan</th><th>PIC</th><th>Kontak</th><th>Ket/Surat Peminjaman</th><th>Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-          <% bookings.forEach(b => { %>
-            <tr>
-              <td><%= b.room_name %></td>
-              <td>
-                <div><%= dayjs(b.start_date || b.date).format('DD MMM YYYY') %> - <%= dayjs(b.end_date || b.date).format('DD MMM YYYY') %></div>
-                <div><%= dayjs('1970-01-01T'+b.start_time).format('HH:mm') %> - <%= dayjs('1970-01-01T'+b.end_time).format('HH:mm') %></div>
-              </td>
-              <td><%= b.borrower_org %></td>
-              <td><%= b.event_name %></td>
-              <td><%= b.committee_name || '-' %></td>
-              <td><%= b.contact || '-' %></td>
-              <td>
-                <%= b.notes || '-' %>
-                <% if (b.doc_path) { 
-                     const isImg = /\.(png|jpe?g|gif|webp|svg)$/i.test(b.doc_path);
-                     const isPdf = /\.pdf$/i.test(b.doc_path);
-                  %>
-                  <div style="margin-top:6px">
-                    <a href="<%= b.doc_path %>" class="btn doc-link" data-type="<%= isPdf? 'pdf':'img' %>" data-src="<%= b.doc_path %>">Lihat Surat</a>
-                  </div>
-                <% } %>
-              </td>
-              <td>
-                <% if (authenticated) { %>
-                  <details>
-                    <summary>Edit</summary>
-                    <form method="post" action="/book/<%= b.id %>/update" class="form compact" enctype="multipart/form-data">
-                      <label>Tanggal Mulai
-                        <input type="date" name="start_date" value="<%= b.start_date || b.date %>" required />
-                      </label>
-                      <label>Tanggal Selesai
-                        <input type="date" name="end_date" value="<%= b.end_date || b.date %>" required />
-                      </label>
-                      <label>Ruangan
-                        <select name="room_id" required>
-                          <% rooms.forEach(r => { %>
-                            <option value="<%= r.id %>" <%= String(b.room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
-                          <% }) %>
-                        </select>
-                      </label>
-                      <label>Jam Mulai
-                        <input type="time" name="start_time" value="<%= b.start_time %>" required />
-                      </label>
-                      <label>Jam Selesai
-                        <input type="time" name="end_time" value="<%= b.end_time %>" required />
-                      </label>
-                      <label>Instansi
-                        <input type="text" name="borrower_org" value="<%= b.borrower_org %>" required />
-                      </label>
-                      <label>Kegiatan
-                        <input type="text" name="event_name" value="<%= b.event_name %>" required />
-                      </label>
-                      <label>PIC
-                        <input type="text" name="committee_name" value="<%= b.committee_name || '' %>" />
-                      </label>
-                      <label>Kontak
-                        <input type="text" name="contact" value="<%= b.contact || '' %>" />
-                      </label>
-                      <label class="full">Keterangan
-                        <textarea name="notes" rows="2"><%= b.notes || '' %></textarea>
-                      </label>
-                      <label class="full">Ganti Surat Peminjaman (opsional)
-                        <input type="file" name="doc" accept="image/*,.pdf" />
-                      </label>
-                      <button type="submit">Update</button>
-                    </form>
-                  </details>
-                  <form method="post" action="/book/<%= b.id %>/delete" onsubmit="return confirm('Hapus agenda ini?')">
-                    <button type="submit" class="danger">Hapus</button>
-                  </form>
-                <% } else { %>
-                  -
-                <% } %>
-              </td>
+    <section class="bg-white rounded-xl shadow-md p-6 mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Agenda</h3>
+      <div class="overflow-x-auto -mx-6 px-6">
+        <table class="w-full border-collapse bg-white border border-gray-200 rounded-lg overflow-hidden min-w-[900px]">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Ruangan</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Waktu</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Instansi</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Kegiatan</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Peserta</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">PIC</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Kontak</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Status</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Ket/Surat</th>
+              <th class="px-4 py-3 text-left text-sm font-semibold border-b whitespace-nowrap">Aksi</th>
             </tr>
-          <% }) %>
-          <% if (bookings.length === 0) { %>
-            <tr><td colspan="8" style="text-align:center">Tidak ada agenda</td></tr>
-          <% } %>
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            <% bookings.forEach(b => { %>
+              <tr class="border-b hover:bg-gray-50">
+                <td class="px-4 py-3 whitespace-nowrap"><%= b.room_name %></td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="text-sm"><%= dayjs(b.start_date || b.date).format('DD MMM YYYY') %> - <%= dayjs(b.end_date || b.date).format('DD MMM YYYY') %></div>
+                  <div class="text-sm text-gray-600"><%= dayjs('1970-01-01T'+b.start_time).format('HH:mm') %> - <%= dayjs('1970-01-01T'+b.end_time).format('HH:mm') %></div>
+                </td>
+                <td class="px-4 py-3 max-w-[200px]"><%= b.borrower_org %></td>
+                <td class="px-4 py-3 max-w-[200px]"><%= b.event_name %></td>
+                <td class="px-4 py-3 whitespace-nowrap"><%= b.participant_count || '-' %></td>
+                <td class="px-4 py-3 max-w-[150px]"><%= b.committee_name || '-' %></td>
+                <td class="px-4 py-3 max-w-[150px]"><%= b.contact || '-' %></td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <span class="px-2 py-1 rounded-full text-xs font-semibold <%= b.status === 'approved' ? 'bg-green-100 text-green-800' : b.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' %>">
+                    <%= b.status === 'approved' ? 'Disetujui' : b.status === 'rejected' ? 'Ditolak' : 'Menunggu' %>
+                  </span>
+                </td>
+                <td class="px-4 py-3 max-w-[200px]">
+                  <div class="text-sm"><%= b.notes || '-' %></div>
+                  <% if (b.doc_path) { 
+                       const isImg = /\.(png|jpe?g|gif|webp|svg)$/i.test(b.doc_path);
+                       const isPdf = /\.pdf$/i.test(b.doc_path);
+                    %>
+                    <div class="mt-2">
+                      <a href="<%= b.doc_path %>" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs doc-link" data-type="<%= isPdf? 'pdf':'img' %>" data-src="<%= b.doc_path %>">Lihat Surat</a>
+                    </div>
+                  <% } %>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                  <div class="flex gap-2 flex-wrap">
+                    <% if (authenticated) { %>
+                      <% if (b.status === 'pending') { %>
+                        <form method="post" action="/book/<%= b.id %>/approve" class="inline">
+                          <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs transition-colors">Setujui</button>
+                        </form>
+                        <form method="post" action="/book/<%= b.id %>/reject" class="inline" onsubmit="return confirm('Tolak pengajuan ini?')">
+                          <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs transition-colors">Tolak</button>
+                        </form>
+                      <% } %>
+                      <% if (b.status === 'approved') { %>
+                        <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs transition-colors" onclick="showReservationProof(<%= b.id %>)">Bukti Reservasi</button>
+                      <% } %>
+                      <details>
+                        <summary class="cursor-pointer text-blue-600 text-sm">Edit</summary>
+                        <form method="post" action="/book/<%= b.id %>/update" class="grid grid-cols-1 gap-2 mt-2 p-2 bg-gray-50 rounded" enctype="multipart/form-data" data-booking-id="<%= b.id %>">
+                          <label class="text-xs">Tanggal Mulai
+                            <input type="date" name="start_date" value="<%= b.start_date || b.date %>" required class="edit-start-date w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                          </label>
+                          <label class="text-xs">Tanggal Selesai
+                            <input type="date" name="end_date" value="<%= b.end_date || b.date %>" required class="edit-end-date w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                          </label>
+                          <label class="text-xs">Jam Mulai
+                            <input type="time" name="start_time" value="<%= b.start_time %>" required class="edit-start-time w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                          </label>
+                          <label class="text-xs">Jam Selesai
+                            <input type="time" name="end_time" value="<%= b.end_time %>" required class="edit-end-time w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                          </label>
+                          <label class="text-xs">Ruangan
+                            <select name="room_id" required class="edit-room-select w-full border border-gray-300 rounded px-2 py-1 text-xs">
+                              <% rooms.forEach(r => { %>
+                                <option value="<%= r.id %>" <%= String(b.room_id)===String(r.id)?'selected':'' %>><%= r.name %></option>
+                              <% }) %>
+                            </select>
+                          </label>
+                          <label class="text-xs">Instansi
+                            <input type="text" name="borrower_org" value="<%= b.borrower_org %>" required class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                          </label>
+                        <label class="text-xs">Kegiatan
+                          <input type="text" name="event_name" value="<%= b.event_name %>" required class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                        </label>
+                        <label class="text-xs">Peserta
+                          <input type="number" name="participant_count" value="<%= b.participant_count || '' %>" min="1" class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                        </label>
+                        <label class="text-xs">PIC
+                          <input type="text" name="committee_name" value="<%= b.committee_name || '' %>" class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                        </label>
+                        <label class="text-xs">Kontak
+                          <input type="text" name="contact" value="<%= b.contact || '' %>" class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                        </label>
+                        <label class="text-xs">Status
+                          <select name="status" class="w-full border border-gray-300 rounded px-2 py-1 text-xs">
+                            <option value="pending" <%= b.status === 'pending' ? 'selected' : '' %>>Menunggu</option>
+                            <option value="approved" <%= b.status === 'approved' ? 'selected' : '' %>>Disetujui</option>
+                            <option value="rejected" <%= b.status === 'rejected' ? 'selected' : '' %>>Ditolak</option>
+                          </select>
+                        </label>
+                        <label class="text-xs">Keterangan
+                          <textarea name="notes" rows="2" class="w-full border border-gray-300 rounded px-2 py-1 text-xs"><%= b.notes || '' %></textarea>
+                        </label>
+                        <label class="text-xs">Ganti Surat Peminjaman (opsional)
+                          <input type="file" name="doc" accept="image/*,.pdf" class="w-full border border-gray-300 rounded px-2 py-1 text-xs" />
+                        </label>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-xs">Update</button>
+                      </form>
+                    </details>
+                    <form method="post" action="/book/<%= b.id %>/delete" onsubmit="return confirm('Hapus agenda ini?')">
+                      <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs">Hapus</button>
+                    </form>
+                  <% } else { %>
+                    <% if (b.status === 'approved') { %>
+                      <button class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded text-xs" onclick="showReservationProof(<%= b.id %>)">Bukti Reservasi</button>
+                    <% } else { %>
+                      -
+                    <% } %>
+                  <% } %>
+                </td>
+              </tr>
+            <% }) %>
+            <% if (bookings.length === 0) { %>
+              <tr><td colspan="10" class="text-center py-4">Tidak ada agenda</td></tr>
+            <% } %>
+          </tbody>
+        </table>
+      </div>
     </section>
   </main>
+
+  <!-- Reservation Proof Modal -->
+  <div class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50" id="reservationProofModal" aria-hidden="true">
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+      <div class="flex justify-between items-center p-6 border-b border-gray-200">
+        <h3 class="text-xl font-bold text-gray-800">Bukti Reservasi</h3>
+        <button class="text-gray-400 hover:text-gray-600 transition-colors text-2xl leading-none" id="closeReservationModal">&times;</button>
+      </div>
+      <div class="p-6 overflow-y-auto max-h-[60vh]" id="reservationProofContent">
+        <div class="text-center py-8 text-gray-500">Memuat bukti reservasi...</div>
+      </div>
+      <div class="flex justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors" id="closeReservationBtn">Tutup</button>
+        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors" id="downloadReservationPdf">Download PDF</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Lightbox untuk dokumen surat (gambar/PDF) -->
   <style>
     .docbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
@@ -249,6 +363,361 @@
     })();
   </script>
   <script>
+    // Reservation proof modal functionality
+    let currentBookingId = null;
+    
+    async function showReservationProof(bookingId) {
+      currentBookingId = bookingId;
+      const modal = document.getElementById('reservationProofModal');
+      const content = document.getElementById('reservationProofContent');
+      
+      console.log('Opening reservation proof for booking:', bookingId);
+      
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      modal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      
+      content.innerHTML = '<div class="text-center py-8 text-gray-500">Memuat bukti reservasi...</div>';
+      
+      try {
+        const response = await fetch(`/api/booking/${bookingId}`);
+        console.log('API response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('API response data:', data);
+        
+        if (data.error) {
+          content.innerHTML = `<div class="text-center py-8 text-red-600">${data.error}</div>`;
+          return;
+        }
+        
+        if (!data.booking) {
+          content.innerHTML = '<div class="text-center py-8 text-red-600">Data booking tidak ditemukan</div>';
+          return;
+        }
+        
+        renderReservationProof(data.booking);
+      } catch (error) {
+        console.error('Error fetching booking:', error);
+        content.innerHTML = '<div class="text-center py-8 text-red-600">Gagal memuat bukti reservasi: ' + error.message + '</div>';
+      }
+    }
+    
+    function renderReservationProof(booking) {
+      const content = document.getElementById('reservationProofContent');
+      const statusClass = booking.status === 'approved' ? 'bg-green-100 text-green-800' : booking.status === 'rejected' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800';
+      const statusText = booking.status === 'approved' ? 'DISETUJUI / APPROVED' : booking.status === 'rejected' ? 'DITOLAK / REJECTED' : 'MENUNGGU / PENDING';
+      
+      const roomName = booking.room_name || '-';
+      const startDate = booking.start_date || booking.date;
+      const endDate = booking.end_date || booking.date;
+      
+      const html = `
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+          <div class="text-center mb-6 pb-4 border-b-2 border-blue-600">
+            <h2 class="text-xl font-bold text-blue-900 mb-2">BUKTI RESERVASI</h2>
+            <p class="text-gray-600 text-sm">Sistem Informasi Agenda Aula Pusbangkom BPW</p>
+          </div>
+          
+          <div class="mb-4">
+            <h4 class="text-sm font-semibold text-blue-900 mb-3 pb-2 border-b border-gray-200">INFORMASI PEMOHON</h4>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Instansi:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.borrower_org || '-'}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Nama Kegiatan:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.event_name || '-'}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">PIC:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.committee_name || '-'}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Kontak:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.contact || '-'}</span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <h4 class="text-sm font-semibold text-blue-900 mb-3 pb-2 border-b border-gray-200">STATUS PERMOHONAN</h4>
+            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">${statusText}</span>
+            <div class="flex mt-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Tanggal Pengajuan:</span>
+              <span class="flex-1 text-gray-900 text-sm">${dayjs(booking.created_at || startDate).format('DD MMMM YYYY HH:mm')}</span>
+            </div>
+          </div>
+          
+          <div class="mb-4">
+            <h4 class="text-sm font-semibold text-blue-900 mb-3 pb-2 border-b border-gray-200">DETAIL PEMINJAMAN</h4>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Ruangan:</span>
+              <span class="flex-1 text-gray-900 text-sm">${roomName}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Tanggal:</span>
+              <span class="flex-1 text-gray-900 text-sm">${dayjs(startDate).format('DD MMMM YYYY')} ${startDate !== endDate ? '- ' + dayjs(endDate).format('DD MMMM YYYY') : ''}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Waktu:</span>
+              <span class="flex-1 text-gray-900 text-sm">${dayjs('1970-01-01T' + booking.start_time).format('HH:mm')} - ${dayjs('1970-01-01T' + booking.end_time).format('HH:mm')}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Jumlah Peserta:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.participant_count || '-'}</span>
+            </div>
+            <div class="flex mb-2">
+              <span class="w-40 font-semibold text-gray-700 text-sm">Keterangan:</span>
+              <span class="flex-1 text-gray-900 text-sm">${booking.notes || '-'}</span>
+            </div>
+          </div>
+          
+          <div class="text-center mt-6 pt-4 border-t border-gray-200">
+            <p class="text-gray-600 text-xs">Dokumen ini diterbitkan secara elektronik oleh Sistem Informasi Agenda Aula Pusbangkom BPW</p>
+            <p class="text-gray-600 text-xs mt-1">Status: Sah & Valid</p>
+          </div>
+        </div>
+      `;
+      
+      content.innerHTML = html;
+    }
+    
+    // Reservation modal event listeners
+    (function() {
+      const modal = document.getElementById('reservationProofModal');
+      const closeBtn = document.getElementById('closeReservationModal');
+      const closeActionBtn = document.getElementById('closeReservationBtn');
+      const downloadBtn = document.getElementById('downloadReservationPdf');
+      
+      if (!modal || !closeBtn) return;
+      
+      function closeReservationModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        currentBookingId = null;
+      }
+      
+      closeBtn.addEventListener('click', closeReservationModal);
+      if (closeActionBtn) closeActionBtn.addEventListener('click', closeReservationModal);
+      
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeReservationModal();
+      });
+      
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeReservationModal();
+      });
+      
+      if (downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+          if (currentBookingId) {
+            window.open(`/print/reservation-single/${currentBookingId}`, '_blank');
+          }
+        });
+      }
+    })();
+
+    // Modal functionality
+    (function() {
+      const modal = document.getElementById('bookingModal');
+      const openBtn = document.getElementById('openBookingModal');
+      const closeBtn = document.getElementById('closeBookingModal');
+      const cancelBtn = document.getElementById('cancelBooking');
+      
+      if (!modal || !openBtn || !closeBtn) return;
+      
+      function openModal() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+      }
+      
+      function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+      
+      openBtn.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) closeModal();
+      });
+      
+      window.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+      });
+    })();
+
+    // Room availability filtering for new booking form
+    (function() {
+      const startDate = document.getElementById('startDate');
+      const endDate = document.getElementById('endDate');
+      const startTime = document.getElementById('startTime');
+      const endTime = document.getElementById('endTime');
+      const roomSelect = document.getElementById('roomSelect');
+      const roomStatus = document.getElementById('roomAvailabilityStatus');
+      const bookingForm = document.getElementById('bookingForm');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      if (!startDate || !endDate || !startTime || !endTime || !roomSelect) return;
+      
+      // Store original room options
+      const originalOptions = Array.from(roomSelect.options).filter(opt => opt.value !== '');
+      
+      async function updateAvailableRooms() {
+        const start_date = startDate.value;
+        const end_date = endDate.value;
+        const start_time = startTime.value;
+        const end_time = endTime.value;
+        
+        // Reset to all rooms if dates/times not complete
+        if (!start_date || !end_date || !start_time || !end_time) {
+          roomSelect.innerHTML = '<option value="">Pilih tanggal dan waktu dulu</option>';
+          originalOptions.forEach(opt => roomSelect.appendChild(opt.cloneNode(true)));
+          roomStatus.textContent = '';
+          submitBtn.disabled = false;
+          return;
+        }
+        
+        // Validate dates and times
+        if (start_date > end_date) {
+          roomStatus.textContent = 'Tanggal mulai harus <= tanggal selesai';
+          roomStatus.style.color = '#dc2626';
+          return;
+        }
+        
+        if (start_time >= end_time) {
+          roomStatus.textContent = 'Jam mulai harus < jam selesai';
+          roomStatus.style.color = '#dc2626';
+          return;
+        }
+        
+        roomStatus.textContent = 'Memeriksa ketersediaan ruangan...';
+        roomStatus.style.color = '#666';
+        
+        try {
+          const response = await fetch(`/api/available-rooms?start_date=${start_date}&end_date=${end_date}&start_time=${start_time}&end_time=${end_time}`);
+          const data = await response.json();
+          
+          if (data.rooms && data.rooms.length > 0) {
+            roomSelect.innerHTML = '';
+            data.rooms.forEach(room => {
+              const option = document.createElement('option');
+              option.value = room.id;
+              option.textContent = `${room.name} (Kapasitas: ${room.capacity || '-'})`;
+              roomSelect.appendChild(option);
+            });
+            roomStatus.textContent = `${data.rooms.length} ruangan tersedia`;
+            roomStatus.style.color = '#16a34a';
+            submitBtn.disabled = false;
+          } else {
+            roomSelect.innerHTML = '<option value="">Tidak ada ruangan tersedia</option>';
+            roomStatus.textContent = 'Tidak ada ruangan tersedia pada waktu tersebut';
+            roomStatus.style.color = '#dc2626';
+            submitBtn.disabled = true;
+          }
+        } catch (error) {
+          console.error('Error fetching available rooms:', error);
+          roomStatus.textContent = 'Gagal memeriksa ketersediaan ruangan';
+          roomStatus.style.color = '#dc2626';
+        }
+      }
+      
+      // Add event listeners
+      startDate.addEventListener('change', updateAvailableRooms);
+      endDate.addEventListener('change', updateAvailableRooms);
+      startTime.addEventListener('change', updateAvailableRooms);
+      endTime.addEventListener('change', updateAvailableRooms);
+      
+      // Prevent form submission if no room selected or time invalid
+      bookingForm.addEventListener('submit', function(e) {
+        if (!roomSelect.value || roomSelect.value === '') {
+          e.preventDefault();
+          alert('Silakan pilih ruangan yang tersedia');
+          return false;
+        }
+      });
+    })();
+
+    // Room availability filtering for edit forms
+    (function() {
+      const editForms = document.querySelectorAll('form[data-booking-id]');
+      
+      editForms.forEach(form => {
+        const startDate = form.querySelector('.edit-start-date');
+        const endDate = form.querySelector('.edit-end-date');
+        const startTime = form.querySelector('.edit-start-time');
+        const endTime = form.querySelector('.edit-end-time');
+        const roomSelect = form.querySelector('.edit-room-select');
+        const bookingId = form.getAttribute('data-booking-id');
+        
+        if (!startDate || !endDate || !startTime || !endTime || !roomSelect) return;
+        
+        // Store original room options
+        const originalOptions = Array.from(roomSelect.options);
+        
+        async function updateEditAvailableRooms() {
+          const start_date = startDate.value;
+          const end_date = endDate.value;
+          const start_time = startTime.value;
+          const end_time = endTime.value;
+          
+          // Reset to all rooms if dates/times not complete
+          if (!start_date || !end_date || !start_time || !end_time) {
+            roomSelect.innerHTML = '';
+            originalOptions.forEach(opt => roomSelect.appendChild(opt.cloneNode(true)));
+            return;
+          }
+          
+          try {
+            const response = await fetch(`/api/available-rooms?start_date=${start_date}&end_date=${end_date}&start_time=${start_time}&end_time=${end_time}&exclude_booking_id=${bookingId}`);
+            const data = await response.json();
+            
+            if (data.rooms && data.rooms.length > 0) {
+              roomSelect.innerHTML = '';
+              data.rooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room.id;
+                option.textContent = room.name;
+                // Keep the current selection if it's still available
+                if (originalOptions.some(opt => opt.value === room.id && opt.selected)) {
+                  option.selected = true;
+                }
+                roomSelect.appendChild(option);
+              });
+            } else {
+              roomSelect.innerHTML = '';
+              originalOptions.forEach(opt => {
+                // Keep current room as option even if not available (for editing)
+                const option = opt.cloneNode(true);
+                roomSelect.appendChild(option);
+              });
+            }
+          } catch (error) {
+            console.error('Error fetching available rooms for edit:', error);
+          }
+        }
+        
+        // Add event listeners
+        startDate.addEventListener('change', updateEditAvailableRooms);
+        endDate.addEventListener('change', updateEditAvailableRooms);
+        startTime.addEventListener('change', updateEditAvailableRooms);
+        endTime.addEventListener('change', updateEditAvailableRooms);
+      });
+    })();
+
     // Mekanisme reveal login sama dengan kalender
     (function(){
       function revealLogin(){

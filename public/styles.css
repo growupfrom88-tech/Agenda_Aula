@@ -1,42 +1,54 @@
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;margin:0;background:#d19121;color:#222}a{color:#0b61a4;text-decoration:none}a:hover{text-decoration:underline}.topbar{background:linear-gradient(120deg,rgba(15,23,42,.92),rgba(15,23,42,.78)),url("/images/BG_Header.jpg") center/cover no-repeat;color:#fff;padding:20px 16px;min-height:120px;display:flex;align-items:center;justify-content:space-between}.container{max-width:1100px;margin:16px auto;padding:0 16px}.filter,.form{display:grid;gap:8px;margin:12px 0}.filter{grid-template-columns:1fr 1fr auto}.form label{display:grid;gap:4px}.form .grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.form .full{grid-column:1/-1}input,select,textarea{padding:8px;border:1px solid #d1d5db;border-radius:6px;background:#fff}button{padding:8px 12px;border:0;background:#2563eb;color:#fff;border-radius:6px;cursor:pointer}button.danger{background:#dc2626}.alert{background:#fee2e2;color:#991b1b;padding:8px 12px;border-radius:6px;margin:8px 0}.card{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:16px 0}.calendar-grid{background:#fff;border:6px solid #e5e7eb;border-radius:10px}.calendar-header,.calendar-body{display:grid;grid-template-columns:repeat(7,1fr)}.cell{border:1px solid #c68700;min-height:60px;padding:6px;position:relative}.cell.head{background:#f8fafc;font-weight:600;text-align:center}.out-month{background:#dad0d0;color:#9ca3af}.cell .date{font-weight:700}.badge{position:relative;bottom:auto;right:6px;background:#10b981;color:#fff;border-radius:999px;padding:2px 8px;font-size:12px}table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden}th,td{padding:8px;border-bottom:1px solid #f0f0f0;text-align:left}details summary{cursor:pointer;color:#0b61a4;margin-bottom:6px}
+/* Custom styles that complement Tailwind CSS */
+*{box-sizing:border-box}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;margin:0;background:#d19121;color:#222}
+a{color:#0b61a4;text-decoration:none}
+a:hover{text-decoration:underline}
 
+.topbar{background:linear-gradient(120deg,rgba(15,23,42,.92),rgba(15,23,42,.78)),url("/images/BG_Header.jpg") center/cover no-repeat;color:#fff;padding:20px 16px;min-height:120px;display:flex;align-items:center;justify-content:space-between}
+
+.calendar-grid{background:#fff;border:4px solid #e5e7eb;border-radius:12px;overflow:hidden}
+.calendar-header{display:grid;grid-template-columns:repeat(7,1fr)}
+.calendar-body{display:grid;grid-template-columns:repeat(7,1fr)}
+.cell{min-height:80px;padding:8px;position:relative}
+.cell.head{background:#eff6ff;font-weight:600;text-align:center;color:#1e3a8a}
+.out-month{background:#f9fafb;color:#9ca3af}
+.cell .date{font-weight:700}
+.badge{position:relative;bottom:auto;right:6px;background:#10b981;color:#fff;border-radius:999px;padding:2px 8px;font-size:11px}
+
+details summary{cursor:pointer;color:#0b61a4;margin-bottom:6px}
+
+/* Button styles - complementing Tailwind */
+button.danger{background:#dc2626}
+button.success{background:#10b981}
+button.success:hover{background:#059669}
+
+/* Status badges */
+.status-badge{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.status-pending{background:#fbbf24;color:#78350f}
+.status-approved{background:#10b981;color:#064e3b}
+.status-rejected{background:#ef4444;color:#7f1d1d}
+
+/* Document lightbox */
+.docbox{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:1000}
+.docbox.open{display:flex}
+.docbox .inner{max-width:92vw;max-height:88vh;display:flex;flex-direction:column;gap:8px;align-items:center}
+.docbox img{max-width:92vw;max-height:82vh;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.docbox iframe,.docbox embed{width:92vw;height:82vh;background:#fff;border-radius:6px;border:0}
+.docbox .actions{display:flex;gap:8px}
+.docbox .btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+.docbox .btn:hover{background:rgba(255,255,255,.2)}
+.docbox .caption{color:#e5e7eb;font-size:13px}
+
+/* Responsive adjustments */
 @media (max-width: 768px){
- .container{margin:8px auto;padding:0 10px}
  .topbar{flex-direction:column;align-items:flex-start;gap:8px}
  .topbar h1{font-size:22px;line-height:1.2}
  .topbar nav{width:100%;flex-wrap:wrap}
- .topbar nav a.btn{flex:1 1 100%;text-align:center}
- .filter{grid-template-columns:1fr;align-items:stretch}
- .form .grid-2{grid-template-columns:1fr}
- .form.compact{gap:6px}
- .form.compact label{font-size:14px}
  .calendar-grid{overflow:hidden}
  .calendar-header,.calendar-body{grid-template-columns:repeat(7,minmax(0,1fr))}
- .cell{min-height:52px;padding:4px}
- .badge{right:2px;padding:1px 6px;font-size:11px}
+ .cell{min-height:60px;padding:4px}
+ .badge{right:2px;padding:1px 6px;font-size:10px}
  table{display:block;width:100%;overflow-x:auto}
  th,td{white-space:nowrap;font-size:13px}
  h1,h2,h3{word-break:break-word}
 }
-
-/* Button-like anchors */
-a.btn, .btn-link-as-button{display:inline-block;padding:8px 12px;border-radius:6px;background:#2563eb;color:#fff !important;border:1px solid transparent;text-decoration:none}
-a.btn:hover, .btn-link-as-button:hover{text-decoration:none;background:#1e4fd6}
-a.btn.secondary{background:#374151}
-a.btn.secondary:hover{background:#2b3441}
-a.btn.ghost{background:transparent;border-color:#0073ff;color:#111827 !important}
-a.btn.ghost:hover{background:#f3f4f6}
-a.btn.sm{padding:6px 10px;font-size:13px}
-
-.day-nav{display:flex;justify-content:flex-end;align-items:center;margin:8px 0}
-.day-nav-buttons{display:flex;gap:8px}
-
-/* Highlight today's date in calendar */
-.cell .date a.btn.today{
-  background:#2563eb;
-  color:#fff !important;
-  border-color:#2563eb;
-}
-
-/* Spacing for nav buttons */
-.topbar nav{display:flex;gap:8px;flex-wrap:wrap}
